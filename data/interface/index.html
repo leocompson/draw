@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+  <head>
+		<title>Draw on Page</title>
+		<link rel="stylesheet" type="text/css" href="index.css">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  </head>
+  <body>
+		<div class="close">
+			<table>
+				<tr>
+					<td id="close" title="Close">
+						<svg width="10" height="10" viewBox="0 0 512 512">
+							<g transform="matrix(1.0842783,0,0,1.0842783,-18.118477,-24.53228)">
+								<rect width="499.08917" height="65.118034" x="112.26851" y="-28.276203" ry="0" transform="rotate(45)"/>
+								<rect width="499.08716" height="65.118034" x="-245.26077" y="329.25357" ry="0" transform="matrix(-0.70710678,0.70710678,0.70710678,0.70710678,0,0)"/>
+							</g>
+						</svg>						
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div class="actions">
+			<table>
+				<tr>
+					<td id="show" title="Show|Hide Controls">
+						<svg width="10" height="10" viewBox="0 0 32 32">
+							<path d="M 7.9134109,0.23180074 C 5.9180109,0.23374515 4.1268622,1.4560202 3.3975943,3.3133821 H 0.31175049 V 6.840365 H 3.3848075 C 4.1089264,8.7104539 5.9080234,9.9431521 7.9134109,9.9432576 9.9172413,9.9413934 11.714195,8.7090025 12.437752,6.840365 H 31.70664 V 3.3133821 H 12.43349 C 11.703652,1.4545729 9.9103673,0.23199361 7.9134109,0.23180074 Z"/>
+							<path d="M 14.593847,11.191073 C 12.598446,11.193017 10.807298,12.415293 10.07803,14.272655 H 0.31175049 V 17.799638 H 10.065243 C 10.789362,19.669726 12.58846,20.902426 14.593847,20.90253 16.597677,20.900667 18.394632,19.668276 19.118188,17.799638 H 31.70664 V 14.272655 H 19.113926 C 18.384088,12.413845 16.590803,11.191266 14.593847,11.191073 Z"/>
+							<path d="M 24.104979,22.050543 C 26.100379,22.052487 27.891528,23.274763 28.620796,25.132125 H 31.70664 V 28.659108 H 28.633583 C 27.909464,30.529196 26.110366,31.761896 24.104979,31.762 22.101149,31.760136 20.304195,30.527745 19.580638,28.659108 H 0.31175049 V 25.132125 H 19.5849 C 20.314738,23.273316 22.108023,22.050737 24.104979,22.050543 Z"/>
+						</svg>										
+					</td>
+				</tr>
+				<tr>
+					<td id="undo" title="Undo">
+						<svg width="10" height="10" viewBox="0 0 512 512">
+							<g transform="matrix(1.2916648,0,0,1.2916648,-74.66665,-65.63292)">
+								<path d="M 447.9,368.2 C 447.9,351.4 451.5,285.1 399.2,232.5 364,197.1 318.9,179.1 255.9,176.3 V 96 L 64,224 256,352 V 272.2 C 296,273.3 318.4,281.3 342.7,292.2 373.6,306 398,336.2 418.5,368.8 L 437.7,400 H 448 C 448,389.9 447.9,377.1 447.9,368.2 Z"/>
+							</g>
+						</svg>									
+					</td>
+				</tr>
+				<tr>
+					<td id="redo" title="Redo">
+						<svg width="10" height="10" viewBox="0 0 512 512">
+							<g transform="matrix(-1.2916648,0,0,1.2916648,586.66573,-65.63292)">
+								<path d="M 447.9,368.2 C 447.9,351.4 451.5,285.1 399.2,232.5 364,197.1 318.9,179.1 255.9,176.3 V 96 L 64,224 256,352 V 272.2 C 296,273.3 318.4,281.3 342.7,292.2 373.6,306 398,336.2 418.5,368.8 L 437.7,400 H 448 C 448,389.9 447.9,377.1 447.9,368.2 Z"/>
+							</g>
+						</svg>							
+					</td>
+				</tr>
+				<tr>
+					<td id="print" title="Print Drawing">
+						<svg width="10" height="10" viewBox="0 0 122.8799 122.8799">
+							<path d="M 20.088461,7.796912 C 20.115373,17.021043 20.088461,22.426355 20.088461,31.855404 H 1.3632812 V 72.542113 93.182435 H 8.5107284 16.868272 V 83.966309 H 10.579408 V 69.439095 H 112.60728 V 83.966309 H 106.34266 V 93.182435 H 121.84766 V 83.966309 H 121.82342 V 63.57649 31.855404 C 121.69342,31.83149 121.58213,31.806716 121.45372,31.782677 V 31.855404 H 102.72854 V 7.796912 Z M 20.19553,76.671389 V 115.21871 H 103.0942 V 76.671389 Z"/>
+						</svg>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div class="toolbar">
+			<table>
+				<tr>
+					<td id="reload" title="Reload UI">
+						<svg height="10" width="10" viewBox="0 0 512 512">
+							<path d="M281.525,228.102l104.758-78.042 c12.082-12.085,12.082-24.259,0-36.342L281.525,35.674c-3.274-2.359-7.359-3.725-11.723-3.725c-10.992,0-19.803,8.536-19.803,19.083  v35.429C144.611,86.737,59.205,172.046,59.205,277.258c0,105.396,85.672,190.793,191.248,190.793 c98.03,0,178.809-73.498,189.977-168.169c0.092-0.275,0.367-3.187,0.367-4.455c0-9.992-8.181-18.169-18.261-18.169h-45.793 c-14.993,0-26.349,10.355-27.893,18.986c-8.811,46.156-49.519,80.954-98.397,80.954c-55.329,0-100.127-44.701-100.127-99.94 c0-55.064,44.523-99.667,99.674-99.941v35.437c0,10.541,8.811,19.076,19.803,19.076C274.166,231.83,278.251,230.471,281.525,228.102 z"/>
+						</svg>
+					</td>
+				</tr>
+				<tr>
+					<td id="support" title="Open support page">
+						<svg height="10" width="10" viewBox="0 0 1792 1792">
+							<path d="M1088 1256v240q0 16-12 28t-28 12h-240q-16 0-28-12t-12-28v-240q0-16 12-28t28-12h240q16 0 28 12t12 28zm316-600q0 54-15.5 101t-35 76.5-55 59.5-57.5 43.5-61 35.5q-41 23-68.5 65t-27.5 67q0 17-12 32.5t-28 15.5h-240q-15 0-25.5-18.5t-10.5-37.5v-45q0-83 65-156.5t143-108.5q59-27 84-56t25-76q0-42-46.5-74t-107.5-32q-65 0-108 29-35 25-107 115-13 16-31 16-12 0-25-8l-164-125q-13-10-15.5-25t5.5-28q160-266 464-266 80 0 161 31t146 83 106 127.5 41 158.5z"/>
+						</svg>
+					</td>
+				</tr>
+				<tr>
+					<td id="donation" title="Make a donation">
+						<svg height="10" width="10" viewBox="-0.709 -11.555 141.732 141.732">
+							<path d="M140.314,37.654C140.314,16.858,123.402,0,102.537,0c-13.744,0-25.77,7.317-32.379,18.255C63.549,7.317,51.521,0,37.777,0 C16.912,0,0,16.858,0,37.654c0,10.821,4.588,20.57,11.922,27.438h-0.01l54.084,51.584c0.992,1.188,2.48,1.945,4.148,1.945 c1.545,0,2.936-0.653,3.92-1.696l54.346-51.833h-0.016C135.729,58.225,140.314,48.476,140.314,37.654"/>
+						</svg>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div class="container"></div>
+			<canvas id="draw-on-page-canvas"></canvas>
+			<div class="controls">
+				<div class="options">
+					<div class="item flex">
+						<label drag="disabled" class="button" for="draw-brushing-selector">Brushing Mode</label>
+						<label drag="disabled" class="button" for="draw-shape-selector">Drawing Mode</label>
+					</div>
+					<div class="separator flex"></div>
+					<div class="item flex">
+						<select drag="disabled" id="draw-brushing-selector" multiple>
+							<option drag="disabled" value="Pencil"></option>
+							<option drag="disabled" value="Circle"></option>
+							<option drag="disabled" value="Spray"></option>
+						</select>
+					</div>
+					<div class="item flex">
+						<select drag="disabled" id="draw-shape-selector" multiple>
+							<option drag="disabled" value="Circle" title="Draw Circle"></option>
+							<option drag="disabled" value="Hexagon" title="Draw Hexagon"></option>
+							<option drag="disabled" value="Octagon" title="Draw Octagon"></option>
+							<option drag="disabled" value="Rect" title="Draw Rectangle"></option>
+							<option drag="disabled" value="Triangle" title="Draw Triangle"></option>
+							<option drag="disabled" value="Line" title="Draw Line"></option>
+							<option drag="disabled" value="Move" title="Move objects"></option>
+						</select>
+					</div>
+					<div class="item title flex">
+						<label class="button" for="draw-brushing-line-color">Line color</label>
+						<label class="button" for="draw-shape-fill-color">Fill color</label>
+						<label class="button" for="draw-brushing-stroke-color">Stroke color</label>
+						<label class="button" for="draw-brushing-shadow-color">Shadow color</label>
+					</div>
+					<div class="item flex">
+						<input drag="disabled" type="color" id="draw-brushing-line-color">
+						<input drag="disabled" type="color" id="draw-shape-fill-color">
+						<input drag="disabled" type="color" id="draw-brushing-stroke-color">
+						<input drag="disabled" type="color" id="draw-brushing-shadow-color">
+					</div>
+					<div class="separator flex"></div>
+					<div class="item shrink">
+						<label for="draw-brushing-line-width">Brush width (px)</label>
+						<span class="info"></span><input drag="disabled" type="range" min="0" max="150" id="draw-brushing-line-width">
+					</div>
+					<div class="item shrink">
+						<label for="draw-brushing-stroke-width">Stroke width (px)</label>
+						<span class="info"></span><input drag="disabled" type="range" min="0" max="150" id="draw-brushing-stroke-width">
+					</div>
+					<div class="item shrink">
+						<label for="draw-brushing-shadow-width">Shadow width (px)</label>
+						<span class="info"></span><input drag="disabled" type="range" min="0" max="50" id="draw-brushing-shadow-width">
+					</div>
+					<div class="item shrink">
+						<label for="draw-brushing-shadow-offset">Shadow offset (px)</label>
+						<span class="info"></span><input drag="disabled" type="range" min="0" max="50" id="draw-brushing-shadow-offset">
+					</div>
+					<div class="item shrink">
+						<label for="draw-brushing-line-opacity">Brush opacity (%)</label>
+						<span class="info"></span><input drag="disabled" type="range" min="0" max="1" step="0.01" id="draw-brushing-line-opacity">
+					</div>
+					<div class="item shrink">
+						<label for="draw-shape-fill-opacity">Shape opacity (%)</label>
+						<span class="info"></span><input drag="disabled" type="range" min="0" max="1" step="0.01" id="draw-shape-fill-opacity">
+					</div>
+				</div>
+				<div class="separator flex"></div>
+				<div class="button flex fixed">
+					<button drag="disabled" id="zoom-in" title="Zoom in (Ctrl + mouse wheel up)"></button>
+					<button drag="disabled" id="zoom-out" title="Zoom out (Ctrl + mouse wheel down)"></button>
+				</div>
+				<div class="button flex">
+					<button drag="disabled" id="copy" title="Copy selection"></button>
+					<button drag="disabled" id="paste" title="Paste clipboard"></button>
+					<button drag="disabled" id="remove" title="Remove selection"></button>
+					<button drag="disabled" id="clear" title="Clear all drawings"></button>
+					<button drag="disabled" id="save" title="Save all drawings"></button>
+					<button drag="disabled" id="hide" title="Show|Hide Controls"></button>
+				</div>
+			</div>
+		</div>
+		<!-- -->
+    <script type="text/javascript" src="vendor/fabric.js"></script>
+    <script type="text/javascript" src="index.js"></script>
+  </body>
+</html>
