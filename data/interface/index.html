@@ -88,28 +88,19 @@
 			<canvas id="draw-on-page-canvas"></canvas>
 			<div class="controls">
 				<div class="options">
-					<div class="item flex">
-						<label drag="disabled" class="button" for="draw-brushing-selector">Brushing Mode</label>
-						<label drag="disabled" class="button" for="draw-shape-selector">Drawing Mode</label>
+					<div class="item flex draw-brushing-selector">
+						<button drag="disabled" id="Pencil" title="Pencil Brush"></button>
+						<button drag="disabled" id="Circle" title="Circle Brush"></button>
+						<button drag="disabled" id="Spray" title="Spray Brush"></button>
 					</div>
-					<div class="separator flex"></div>
-					<div class="item flex">
-						<select drag="disabled" id="draw-brushing-selector" multiple>
-							<option drag="disabled" value="Pencil"></option>
-							<option drag="disabled" value="Circle"></option>
-							<option drag="disabled" value="Spray"></option>
-						</select>
-					</div>
-					<div class="item flex">
-						<select drag="disabled" id="draw-shape-selector" multiple>
-							<option drag="disabled" value="Circle" title="Draw Circle"></option>
-							<option drag="disabled" value="Hexagon" title="Draw Hexagon"></option>
-							<option drag="disabled" value="Octagon" title="Draw Octagon"></option>
-							<option drag="disabled" value="Rect" title="Draw Rectangle"></option>
-							<option drag="disabled" value="Triangle" title="Draw Triangle"></option>
-							<option drag="disabled" value="Line" title="Draw Line"></option>
-							<option drag="disabled" value="Move" title="Move objects"></option>
-						</select>
+					<div class="item flex draw-shape-selector">
+						<button drag="disabled" id="Circle" title="Draw Circle"></button>
+						<button drag="disabled" id="Hexagon" title="Draw Hexagon"></button>
+						<button drag="disabled" id="Octagon" title="Draw Octagon"></button>
+						<button drag="disabled" id="Rect" title="Draw Rectangle"></button>
+						<button drag="disabled" id="Triangle" title="Draw Triangle"></button>
+						<button drag="disabled" id="Line" title="Draw Line"></button>
+						<button drag="disabled" id="Move" title="Move objects"></button>
 					</div>
 					<div class="item title flex">
 						<label class="button" for="draw-brushing-line-color">Line color</label>

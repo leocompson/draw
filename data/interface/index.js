@@ -24,7 +24,7 @@ var config  = {
   },
   "connect": {
     "port": '',
-    "name": "page",
+    "name": "webapp",
     "to": {
       "background": {
         "page": function () {
@@ -34,8 +34,8 @@ var config  = {
             document.documentElement.setAttribute("context", "extension");
           }
           /*  */
-          if (config.connect.name === "page") {
-            document.documentElement.setAttribute("context", "page");
+          if (config.connect.name === "page" || config.connect.name === "webapp") {
+            document.documentElement.setAttribute("context", config.connect.name);
           } else {
             config.connect.port = chrome.runtime.connect({"name": config.connect.name});
           }
@@ -77,10 +77,10 @@ var config  = {
       config.draw.brushing.line.opacity.value = config.storage.read("line.opacity") !== undefined ? config.storage.read("line.opacity") : 1;
       config.draw.brushing.line.color.value = config.storage.read("line.color") !== undefined ? config.storage.read("line.color") : "#00e61b";
       config.draw.brushing.shadow.offset.value = config.storage.read("shadow.offset") !== undefined ? config.storage.read("shadow.offset") : 0;
-      config.draw.shape.selector.value = config.storage.read("shape.selector") !== undefined ? config.storage.read("shape.selector") : "Circle";
       config.draw.shape.stroke.color.value = config.storage.read("stroke.color") !== undefined ? config.storage.read("stroke.color") : "#c7c7c7";
       config.draw.brushing.shadow.color.value = config.storage.read("shadow.color") !== undefined ? config.storage.read("shadow.color") : "#777777";
-      config.draw.brushing.selector.value = config.storage.read("brushing.selector") !== undefined ? config.storage.read("brushing.selector") : "Pencil";
+      config.draw.shape.selector.setAttribute("selected", config.storage.read("shape.selector") !== undefined ? config.storage.read("shape.selector") : "Circle");
+      config.draw.brushing.selector.setAttribute("selected", config.storage.read("brushing.selector") !== undefined ? config.storage.read("brushing.selector") : "Pencil");
       /*  */
       config.draw.shape.stroke.width.previousSibling.textContent = Number(config.draw.shape.stroke.width.value).toFixed(1);
       config.draw.shape.fill.opacity.previousSibling.textContent = Number(config.draw.shape.fill.opacity.value).toFixed(2);
@@ -92,6 +92,10 @@ var config  = {
       //config.draw.brushing.controls.style.top = config.storage.read("controls.top") !== undefined ? config.storage.read("controls.top") : "100px";
       //config.draw.brushing.controls.style.left = config.storage.read("controls.left") !== undefined ? config.storage.read("controls.left") : "100px";
       /*  */
+      var style = window.getComputedStyle(document.body);
+      var width = style ? parseInt(style.width) : 800;
+      config.draw.options.width = config.draw.options.height = width;
+      /*  */
       config.draw.canvas = new fabric.Canvas(config.draw.id, config.draw.options);
       config.draw.canvas.on("object:modified", config.listeners.object.updated);
       config.draw.canvas.on("object:added", config.listeners.object.updated);
@@ -100,7 +104,16 @@ var config  = {
       config.draw.canvas.on("mouse:down", config.listeners.mouse.down);
       config.draw.canvas.on("mouse:up", config.listeners.mouse.up);
       /*  */
-      window.setTimeout(function () {config.draw[config.draw.mode].label.click()}, 300);
+      window.setTimeout(function () {
+        if (config.draw.mode === "brushing") {
+          var brushing = config.draw.brushing.selector.getAttribute("selected");
+          if (brushing) config.draw.brushing.selector.querySelector('#' + brushing).setAttribute("selected", '');
+        } else {
+          var shape = config.draw.shape.selector.getAttribute("selected");
+          if (shape) config.draw.shape.selector.querySelector('#' + shape).setAttribute("selected", '');
+        }
+      }, 300);
+      /*  */
       config.draw.canvas.isDrawingMode = config.draw.mode === "brushing";
       config.draw.brushing.controls.style.display = "block";
       /*  */
@@ -119,7 +132,7 @@ var config  = {
     "clipboard": null,
     "keyborad": {"code": null},
     "id": "draw-on-page-canvas",
-    "options": {"width": "2560", "height": "2560"},
+    "options": {"width": 800, "height": 800},
     "save": function () {
       var current = config.draw.history[config.draw.history.length - 1];
       config.storage.write("last.draw", JSON.stringify(current));
@@ -213,13 +226,16 @@ var config  = {
       },
       "update": function () {
         if (config.draw.canvas) {
-          var key = config.draw.brushing.selector.value + "Brush";
-          config.draw.canvas.freeDrawingBrush = new fabric[key](config.draw.canvas);
-          if (config.draw.canvas.freeDrawingBrush) {
-            var opacity = config.draw.convert.to.hex(config.draw.brushing.line.opacity.value);
-            config.draw.canvas.freeDrawingBrush.color = config.draw.brushing.line.color.value + opacity;
-            config.draw.canvas.freeDrawingBrush.width = parseInt(config.draw.brushing.line.width.value, 10) || 1;
-            config.draw.canvas.freeDrawingBrush.shadow = new fabric.Shadow(config.draw.brushing.options(config.draw.brushing.shadow));
+          var value = config.draw.brushing.selector.getAttribute("selected");
+          if (value) {
+            var key = value + "Brush";
+            config.draw.canvas.freeDrawingBrush = new fabric[key](config.draw.canvas);
+            if (config.draw.canvas.freeDrawingBrush) {
+              var opacity = config.draw.convert.to.hex(config.draw.brushing.line.opacity.value);
+              config.draw.canvas.freeDrawingBrush.color = config.draw.brushing.line.color.value + opacity;
+              config.draw.canvas.freeDrawingBrush.width = parseInt(config.draw.brushing.line.width.value, 10) || 1;
+              config.draw.canvas.freeDrawingBrush.shadow = new fabric.Shadow(config.draw.brushing.options(config.draw.brushing.shadow));
+            }
           }
         }
       }
@@ -320,7 +336,30 @@ var config  = {
       var x = {"init": null, "first": null};
       var y = {"init": null, "first": null};
       /*  */
-      var drag = function (e) {
+      var touchmove = function (e) {
+        var touch = e.touches[0];        
+        if (touch.target.getAttribute("drag") === "disabled") return;
+        config.draw.brushing.controls.style.top = y.init + touch.pageY - y.first + "px";
+        config.draw.brushing.controls.style.left = x.init + touch.pageX - x.first + "px";
+        /*  */
+        config.storage.write("controls.top", config.draw.brushing.controls.style.top);
+        config.storage.write("controls.left", config.draw.brushing.controls.style.left);
+            };
+      /*  */
+      var touchstart = function (e) {
+        var touch = e.touches[0];
+        if (touch.target.getAttribute("drag") === "disabled") return;
+        config.draw.brushing.controls.addEventListener("touchmove", touchmove, false);
+        e.preventDefault();
+        /*  */
+        x.first = touch.pageX;
+        y.first = touch.pageY;
+        y.init = config.draw.brushing.controls.offsetTop;
+        x.init = config.draw.brushing.controls.offsetLeft;
+      };
+      /*  */
+      var mousemove = function (e) {
+        if (e.target.getAttribute("drag") === "disabled") return;
         config.draw.brushing.controls.style.top = y.init + e.pageY - y.first + "px";
         config.draw.brushing.controls.style.left = x.init + e.pageX - x.first + "px";
         /*  */
@@ -328,47 +367,21 @@ var config  = {
         config.storage.write("controls.left", config.draw.brushing.controls.style.left);
       };
       /*  */
-      var swipe = function (e) {
-        var touch = e.touches;
-        config.draw.brushing.controls.style.top = y.init + touch[0].pageY - y.first + "px";
-        config.draw.brushing.controls.style.left = x.init + touch[0].pageX - x.first + "px";
-        /*  */
-        config.storage.write("controls.top", config.draw.brushing.controls.style.top);
-        config.storage.write("controls.left", config.draw.brushing.controls.style.left);
-      };
-      /*  */
-      config.draw.brushing.controls.addEventListener("mousedown", function (e) {        
+      var mousedown = function (e) {      
         if (e.target.getAttribute("drag") === "disabled") return;
+        config.draw.brushing.controls.addEventListener("mousemove", mousemove, false);
         e.preventDefault();
         /*  */
         x.first = e.pageX;
         y.first = e.pageY;
         y.init = config.draw.brushing.controls.offsetTop;
         x.init = config.draw.brushing.controls.offsetLeft;
-        /*  */
-        config.draw.brushing.controls.addEventListener("mousemove", drag, false);
-        window.addEventListener("mouseup", function () {
-          config.draw.brushing.controls.removeEventListener("mousemove", drag, false);
-        }, false);
-      }, false);
+      };
       /*  */
-      config.draw.brushing.controls.addEventListener("touchstart", function (e) {
-        var touch = e.touches;
-        if (touch[0].getAttribute("drag") === "disabled") return;
-        e.preventDefault();
-        /*  */
-        x.first = touch[0].pageX;
-        y.first = touch[0].pageY;
-        y.init = config.draw.brushing.controls.offsetTop;
-        x.init = config.draw.brushing.controls.offsetLeft;
-        /*  */
-        config.draw.brushing.controls.addEventListener("touchmove", swipe, false);
-        window.addEventListener("touchend", function (e) {
-          if (e.touches[0].getAttribute("drag") === "disabled") return;
-          e.preventDefault();
-          config.draw.brushing.controls.removeEventListener("touchmove", swipe, false);
-        }, false);
-      }, false);
+      config.draw.brushing.controls.addEventListener("mousedown", mousedown, false);
+      config.draw.brushing.controls.addEventListener("touchstart", touchstart, false);
+      window.addEventListener("mouseup", function () {config.draw.brushing.controls.removeEventListener("mousemove", mousemove, false)}, false);
+      window.addEventListener("touchend", function () {config.draw.brushing.controls.removeEventListener("touchmove", touchmove, false)}, false);
     }
   },
   "listeners": {
@@ -383,14 +396,14 @@ var config  = {
     "mouse": {
       "up": function () {
         if (config.draw.mode === "shape") {
-          if (config.draw.shape.selector.value === "Line") {
-            config.draw.shape.line.active = false;
-          }
+          var value = config.draw.shape.selector.getAttribute("selected");
+          if (value === "Line") config.draw.shape.line.active = false;
         }
       },
       "move": function (o) {
         if (config.draw.mode === "shape") {
-          if (config.draw.shape.selector.value === "Line") {
+          var value = config.draw.shape.selector.getAttribute("selected");
+          if (value === "Line") {
             if (config.draw.shape.line.active) {
               config.draw.canvas.selection = false;
               var pointer = config.draw.canvas.getPointer(o.e);
@@ -418,7 +431,8 @@ var config  = {
       },
       "down": function (o) {
         if (config.draw.mode === "shape") {
-          if (config.draw.shape.selector.value === "Line") {
+          var value = config.draw.shape.selector.getAttribute("selected");
+          if (value === "Line") {
             config.draw.shape.line.active = true;
             var pointer = config.draw.canvas.getPointer(o.e);
             config.draw.shape.line.object = new fabric.Line([pointer.x, pointer.y, pointer.x, pointer.y], {
@@ -436,36 +450,39 @@ var config  = {
       }
     },
     "selector": {
+      "reset": function () {
+        [...config.draw.shape.selector.querySelectorAll("button")].map(function (e) {e.removeAttribute("selected")});
+        [...config.draw.brushing.selector.querySelectorAll("button")].map(function (e) {e.removeAttribute("selected")});
+      },
       "brushing": function (e) {
-        config.draw.mode = "brushing";
-        config.draw.canvas.isDrawingMode = true;
-        config.storage.write("draw.mode", config.draw.mode);
-        config.draw.shape.label.removeAttribute("selected");
-        config.draw.brushing.label.setAttribute("selected", '');
-        /*  */        
-        if (e.target.nodeName === "OPTION") {
-          this.value = e.target.value;
+        if (e && e.target) {
+          config.draw.mode = "brushing";
+          config.listeners.selector.reset();
+          e.target.setAttribute("selected", '');
+          config.draw.canvas.isDrawingMode = true;
+          this.setAttribute("selected", e.target.id);
+          config.storage.write("draw.mode", config.draw.mode);
+          /*  */
           config.draw.brushing.update();
-          config.storage.write("brushing.selector", e.target.value);
+          config.storage.write("brushing.selector", e.target.id);
         }
       },
       "shape": function (e) {
-        config.draw.mode = "shape";
-        config.draw.canvas.selection = true;
-        config.draw.canvas.isDrawingMode = false;
-        config.storage.write("draw.mode", config.draw.mode);
-        config.draw.shape.label.setAttribute("selected", '');
-        config.draw.brushing.label.removeAttribute("selected");
-        /*  */
-        if (e.target.nodeName === "OPTION") {
-          this.value = e.target.value;
-          config.storage.write("shape.selector", e.target.value);
+        if (e && e.target) {
+          config.draw.mode = "shape";
+          config.listeners.selector.reset();
+          config.draw.canvas.selection = true;
+          e.target.setAttribute("selected", '');
+          config.draw.canvas.isDrawingMode = false;
+          this.setAttribute("selected", e.target.id);
+          config.storage.write("draw.mode", config.draw.mode);
+          config.storage.write("shape.selector", e.target.id);
           /*  */
-          if (e.target.value === "Move") {
+          if (e.target.id === "Move") {
             config.draw.canvas.selection = true;
           }
           /*  */
-          if (e.target.value === "Circle") {
+          if (e.target.id === "Circle") {
             config.draw.canvas.add(new fabric.Circle({
               "top": 100, 
               "left": 100,
@@ -477,7 +494,7 @@ var config  = {
             }));
           }
           /*  */
-          if (e.target.value === "Hexagon") {
+          if (e.target.id === "Hexagon") {
             var points = config.draw.shape.generate.regular.polygon.points(6, 200);
             config.draw.canvas.add(new fabric.Polygon(points, {
               "top": 100, 
@@ -489,7 +506,7 @@ var config  = {
             }));
           }
           /*  */
-          if (e.target.value === "Octagon") {
+          if (e.target.id === "Octagon") {
             var points = config.draw.shape.generate.regular.polygon.points(8, 200);
             config.draw.canvas.add(new fabric.Polygon(points, {
               "top": 100, 
@@ -501,7 +518,7 @@ var config  = {
             }));
           }
           /*  */
-          if (e.target.value === "Triangle") {
+          if (e.target.id === "Triangle") {
             config.draw.canvas.add(new fabric.Triangle({
               "top": 100, 
               "left": 100,
@@ -514,7 +531,7 @@ var config  = {
             }));
           }
           /*  */
-          if (e.target.value === "Rect") {
+          if (e.target.id === "Rect") {
             config.draw.canvas.add(new fabric.Rect({
               "top": 50,
               "left": 100,
@@ -551,11 +568,10 @@ var load = function () {
   var donation = document.getElementById("donation");
   /*  */
   config.draw.brushing.controls = document.querySelector(".controls");
-  config.draw.shape.selector = document.getElementById("draw-shape-selector");
+  config.draw.shape.selector = document.querySelector(".draw-shape-selector");
   config.draw.shape.fill.color = document.getElementById("draw-shape-fill-color");
-  config.draw.brushing.selector = document.getElementById("draw-brushing-selector");
+  config.draw.brushing.selector = document.querySelector(".draw-brushing-selector");
   config.draw.shape.fill.opacity = document.getElementById("draw-shape-fill-opacity");
-  config.draw.shape.label = document.querySelector("label[for='draw-shape-selector']");
   config.draw.brushing.line.color = document.getElementById("draw-brushing-line-color");
   config.draw.brushing.line.width = document.getElementById("draw-brushing-line-width");
   config.draw.shape.stroke.width = document.getElementById("draw-brushing-stroke-width");
@@ -564,7 +580,6 @@ var load = function () {
   config.draw.brushing.shadow.width = document.getElementById("draw-brushing-shadow-width");
   config.draw.brushing.shadow.color = document.getElementById("draw-brushing-shadow-color");
   config.draw.brushing.shadow.offset = document.getElementById("draw-brushing-shadow-offset");
-  config.draw.brushing.label = document.querySelector("label[for='draw-brushing-selector']");
   /*  */
   config.draw.shape.selector.addEventListener("click", config.listeners.selector.shape);
   config.draw.brushing.selector.addEventListener("click", config.listeners.selector.brushing);
@@ -632,6 +647,7 @@ window.addEventListener("resize", function () {
 
 if (document.location.search === "?tab") config.connect.name = "tab";
 if (document.location.search === "?win") config.connect.name = "win";
+if (document.location.search === "?page") config.connect.name = "page";
 if (document.location.search === "?popup") config.connect.name = "popup";
 
 config.connect.to.background.page();
