@@ -330,8 +330,9 @@ html[context="page"] .controls {
 }
 
 html[context="webapp"] .controls {
-  top: calc(50% - 395px);
-  left: calc(100% - 263px);
+  top: 1px;
+  right: 1px;
+  left: unset;
 }
 
 @media print {
