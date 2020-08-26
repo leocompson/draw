@@ -79,6 +79,7 @@ var config  = {
       config.draw.brushing.shadow.offset.value = config.storage.read("shadow.offset") !== undefined ? config.storage.read("shadow.offset") : 0;
       config.draw.shape.stroke.color.value = config.storage.read("stroke.color") !== undefined ? config.storage.read("stroke.color") : "#c7c7c7";
       config.draw.brushing.shadow.color.value = config.storage.read("shadow.color") !== undefined ? config.storage.read("shadow.color") : "#777777";
+      config.draw.background.color.value = config.storage.read("background.color") !== undefined ? config.storage.read("background.color") : "#ffffff";
       config.draw.shape.selector.setAttribute("selected", config.storage.read("shape.selector") !== undefined ? config.storage.read("shape.selector") : "Circle");
       config.draw.brushing.selector.setAttribute("selected", config.storage.read("brushing.selector") !== undefined ? config.storage.read("brushing.selector") : "Pencil");
       /*  */
@@ -92,10 +93,12 @@ var config  = {
       //config.draw.brushing.controls.style.top = config.storage.read("controls.top") !== undefined ? config.storage.read("controls.top") : "100px";
       //config.draw.brushing.controls.style.left = config.storage.read("controls.left") !== undefined ? config.storage.read("controls.left") : "100px";
       /*  */
-      var style = window.getComputedStyle(document.body);
-      var width = style ? parseInt(style.width) : 800;
+      var computed = window.getComputedStyle(document.body);
+      var width = computed ? parseInt(computed.width) : 800;
+      
       config.draw.options.width = config.draw.options.height = width;
-      /*  */
+      config.draw.options.backgroundColor = config.connect.name === "page" ? "transparent" : config.draw.background.color.value;
+      /*  */      
       config.draw.canvas = new fabric.Canvas(config.draw.id, config.draw.options);
       config.draw.canvas.on("object:modified", config.listeners.object.updated);
       config.draw.canvas.on("object:added", config.listeners.object.updated);
@@ -120,6 +123,10 @@ var config  = {
       var last = config.storage.read("last.draw");
       if (last) {
         config.draw.canvas.loadFromJSON(JSON.parse(last));
+        if (config.connect.name === "page") {
+          config.draw.canvas.backgroundColor = "transparent";
+        }
+        /*  */
         config.draw.canvas.renderAll();
       }
     }
@@ -129,6 +136,7 @@ var config  = {
     "screen": 0,
     "history": [],
     "canvas": null,
+    "background": {},
     "clipboard": null,
     "keyborad": {"code": null},
     "id": "draw-on-page-canvas",
@@ -138,14 +146,26 @@ var config  = {
       config.storage.write("last.draw", JSON.stringify(current));
     },
     "copy": function () {
-      config.draw.canvas.getActiveObject().clone(function (cloned) {
-        config.draw.clipboard = cloned;
-      });
+      var active = config.draw.canvas.getActiveObject();
+      if (active) {
+        active.clone(function (cloned) {
+          config.draw.clipboard = cloned;
+        });
+      }
     },
     "convert": {
       "to": {
         "hex": function (opacity) {
           return ((opacity * 255) | 1 << 8).toString(16).slice(1);
+        },
+        "png": function () {
+          var a = document.createElement('a');
+          var src = config.draw.canvas.toDataURL({"format": "png", "quality": 1.00});
+          a.download = "drawing.png";
+          a.style.display = "none";
+          a.href = src;
+          a.click();
+          window.setTimeout(function () {a.remove()}, 1000);
         }
       }
     },
@@ -172,9 +192,8 @@ var config  = {
     "remove": {
       "active": {
         "objects": function () {
-          var objects = config.draw.canvas.getActiveObjects();
-          objects.forEach(function (e) {
-            config.draw.canvas.remove(e);
+          config.draw.canvas.getActiveObjects().forEach(function (object) {
+            config.draw.canvas.remove(object);
           });
         }
       }
@@ -196,7 +215,11 @@ var config  = {
     "paste": function () {
       config.draw.clipboard.clone(function (cloned) {
         config.draw.canvas.discardActiveObject();
-        cloned.set({"evented": true, "top": 50, "left": 50});
+        cloned.set({
+          "evented": true, 
+          "top": cloned.top + 50, 
+          "left": cloned.left + 50
+        });
         /*  */
         if (cloned.type === "activeSelection") {
           cloned.canvas = config.draw.canvas;
@@ -207,8 +230,54 @@ var config  = {
         }
         /*  */
         config.draw.canvas.setActiveObject(cloned);
-        config.draw.canvas.requestRenderAll();
+        config.draw.canvas.renderAll();
+        config.listeners.object.updated();
       });
+    },
+    "action": {
+      "rotate": function (code) {
+        var active = config.draw.canvas.getActiveObject();
+        if (active) {
+          var degrees = code === 219 ? -1 : +1;
+          active.rotate(active.angle + degrees);
+          /*  */
+          active.setCoords();
+          config.draw.canvas.renderAll();
+          config.listeners.object.updated();
+        }
+      },
+      "move": function (dir, shift) {
+        var active = config.draw.canvas.getActiveObject();
+        if (active) {
+          switch (dir) {
+            case 38: active.top = active.top - (shift ? 10 : 1); break;
+            case 40: active.top = active.top + (shift ? 10 : 1); break;
+            case 37: active.left = active.left - (shift ? 10 : 1); break;
+            case 39: active.left = active.left + (shift ? 10 : 1); break;
+          }
+          /*  */
+          active.setCoords();
+          config.draw.canvas.renderAll();
+          config.listeners.object.updated();
+        }
+      },
+      "resize": function (code) {
+        var active = config.draw.canvas.getActiveObject();
+        if (active) {
+          var center = active.getCenterPoint();
+          var scale = (code === 188 ? 0.99 : 1.01);
+          var selection = active.type === "activeSelection";
+          /*  */
+          active.scaleX = active.scaleX * scale;
+          active.scaleY = active.scaleY * scale;
+          active.top = active.top + (selection ? center.y * (1 - scale) / 2 : 0);
+          active.left = active.left + (selection ? center.x * (1 - scale) / 2 : 0);
+          /*  */
+          active.setCoords();
+          config.draw.canvas.renderAll();
+          config.listeners.object.updated();
+        }
+      }
     },
     "brushing": {
       "line": {},
@@ -229,7 +298,7 @@ var config  = {
           var value = config.draw.brushing.selector.getAttribute("selected");
           if (value) {
             var key = value + "Brush";
-            config.draw.canvas.freeDrawingBrush = new fabric[key](config.draw.canvas);
+            config.draw.canvas.freeDrawingBrush = new fabric[key](config.draw.canvas, {"originX": "center", "originY": "center"});
             if (config.draw.canvas.freeDrawingBrush) {
               var opacity = config.draw.convert.to.hex(config.draw.brushing.line.opacity.value);
               config.draw.canvas.freeDrawingBrush.color = config.draw.brushing.line.color.value + opacity;
@@ -275,10 +344,6 @@ var config  = {
       config.draw.brushing.update();
       fabric.Object.prototype.transparentCorners = false;
       /*  */
-      config.draw.shape.fill.color.addEventListener("input", function () {
-        config.storage.write("fill.color", this.value);
-      });
-      /*  */
       config.draw.shape.stroke.color.addEventListener("input", function () {
         config.storage.write("stroke.color", this.value);
       });
@@ -293,15 +358,24 @@ var config  = {
         this.previousSibling.textContent = Number(this.value).toFixed(1);
       });
       /*  */
+      config.draw.brushing.shadow.color.addEventListener("input", function () {
+        config.storage.write("shadow.color", this.value);
+        config.draw.canvas.freeDrawingBrush.shadow.color = this.value;
+      });
+      /*  */
+      config.draw.background.color.addEventListener("input", function () {
+        config.storage.write("background.color", this.value);
+        config.draw.canvas.backgroundColor = config.connect.name === "page" ? "transparent" : this.value;
+        config.draw.options.backgroundColor = config.connect.name === "page" ? "transparent" : this.value;
+        /*  */
+        config.draw.canvas.renderAll();
+        config.listeners.object.updated();
+      });
+      /*  */
       config.draw.brushing.line.color.addEventListener("input", function () {
         config.storage.write("line.color", this.value);
         var opacity = config.draw.convert.to.hex(config.draw.brushing.line.opacity.value);
         config.draw.canvas.freeDrawingBrush.color = this.value + opacity;
-      });
-      /*  */
-      config.draw.brushing.shadow.color.addEventListener("input", function () {
-        config.storage.write("shadow.color", this.value);
-        config.draw.canvas.freeDrawingBrush.shadow.color = this.value;
       });
       /*  */
       config.draw.brushing.line.width.addEventListener("input", function () {
@@ -328,6 +402,15 @@ var config  = {
         this.previousSibling.textContent = Number(this.value).toFixed(1);
         config.draw.canvas.freeDrawingBrush.shadow.offsetX = parseInt(this.value, 10) || 0;
         config.draw.canvas.freeDrawingBrush.shadow.offsetY = parseInt(this.value, 10) || 0;
+      });
+      /*  */
+      config.draw.shape.fill.color.addEventListener("input", function () {
+        config.storage.write("fill.color", this.value);
+        config.draw.canvas.getActiveObjects().forEach(function (object) {
+          object.set("fill", config.storage.read("fill.color"));
+          config.draw.canvas.renderAll();
+          config.listeners.object.updated();
+        });
       });
     }
   },
@@ -386,11 +469,15 @@ var config  = {
   },
   "listeners": {
     "object": {
-      "updated": function (e) {        
-        var screen = JSON.stringify(e.target.canvas);
-        if (config.draw.history.indexOf(screen) === -1) {
-          config.draw.history.push(screen);
-        }
+      "timeout": null,
+      "updated": function () {
+        window.clearTimeout(config.listeners.object.timeout);
+        config.listeners.object.timeout = window.setTimeout(function () {          
+          var screen = JSON.stringify(config.draw.canvas);
+          if (config.draw.history.indexOf(screen) === -1) {
+            config.draw.history.push(screen);
+          }
+        }, 300);
       }
     },
     "mouse": {
@@ -410,21 +497,23 @@ var config  = {
               if (config.draw.shape.line.object) {
                 config.draw.shape.line.object.set({"x2": pointer.x, "y2": pointer.y});
                 config.draw.canvas.renderAll();
+                config.listeners.object.updated();
               } 
             }
           }
         }
       },
       "wheel": function (o) {
-        if (config.draw.keyborad.code === 17) {
+        if (config.draw.keyborad.code === 16) {
           var delta = o.e.deltaY;
           var zoom = config.draw.canvas.getZoom();
+          var point = {'x': o.e.offsetX, 'y': o.e.offsetY};
           /*  */
-          zoom *= 0.9999 ** delta;
+          zoom *= 0.999 ** delta;
           if (zoom > 20) zoom = 20;
           if (zoom < 0.01) zoom = 0.01;
           /*  */
-          config.draw.canvas.setZoom(zoom);
+          config.draw.canvas.zoomToPoint(point, zoom);
           o.e.preventDefault();
           o.e.stopPropagation();
         }
@@ -436,8 +525,8 @@ var config  = {
             config.draw.shape.line.active = true;
             var pointer = config.draw.canvas.getPointer(o.e);
             config.draw.shape.line.object = new fabric.Line([pointer.x, pointer.y, pointer.x, pointer.y], {
-              "originY": "center",
               "originX": "center",
+              "originY": "center",
               "fill": config.draw.shape.fill.color.value,
               "stroke": config.draw.shape.stroke.color.value,
               "opacity": Number(config.draw.shape.fill.opacity.value),
@@ -484,9 +573,11 @@ var config  = {
           /*  */
           if (e.target.id === "Circle") {
             config.draw.canvas.add(new fabric.Circle({
-              "top": 100, 
-              "left": 100,
+              "top": 200, 
+              "left": 200,
               "radius": 200,
+              "originX": "center",
+              "originY": "center",
               "fill": config.draw.shape.fill.color.value,
               "stroke": config.draw.shape.stroke.color.value,
               "opacity": Number(config.draw.shape.fill.opacity.value),
@@ -497,8 +588,10 @@ var config  = {
           if (e.target.id === "Hexagon") {
             var points = config.draw.shape.generate.regular.polygon.points(6, 200);
             config.draw.canvas.add(new fabric.Polygon(points, {
-              "top": 100, 
-              "left": 100,
+              "top": 200, 
+              "left": 200,
+              "originX": "center",
+              "originY": "center",
               "fill": config.draw.shape.fill.color.value,
               "stroke": config.draw.shape.stroke.color.value,
               "opacity": Number(config.draw.shape.fill.opacity.value),
@@ -509,8 +602,10 @@ var config  = {
           if (e.target.id === "Octagon") {
             var points = config.draw.shape.generate.regular.polygon.points(8, 200);
             config.draw.canvas.add(new fabric.Polygon(points, {
-              "top": 100, 
-              "left": 100,
+              "top": 200, 
+              "left": 200,
+              "originX": "center",
+              "originY": "center",
               "fill": config.draw.shape.fill.color.value,
               "stroke": config.draw.shape.stroke.color.value,
               "opacity": Number(config.draw.shape.fill.opacity.value),
@@ -520,10 +615,12 @@ var config  = {
           /*  */
           if (e.target.id === "Triangle") {
             config.draw.canvas.add(new fabric.Triangle({
-              "top": 100, 
-              "left": 100,
+              "top": 150, 
+              "left": 200,
               "width": 400,
               "height": 300,
+              "originX": "center",
+              "originY": "center",
               "fill": config.draw.shape.fill.color.value,
               "stroke": config.draw.shape.stroke.color.value,
               "opacity": Number(config.draw.shape.fill.opacity.value),
@@ -533,10 +630,12 @@ var config  = {
           /*  */
           if (e.target.id === "Rect") {
             config.draw.canvas.add(new fabric.Rect({
-              "top": 50,
-              "left": 100,
+              "top": 150,
+              "left": 250,
               "width": 500,
               "height": 300,
+              "originX": "center",
+              "originY": "center",
               "fill": config.draw.shape.fill.color.value,
               "stroke": config.draw.shape.stroke.color.value,
               "opacity": Number(config.draw.shape.fill.opacity.value),
@@ -550,6 +649,7 @@ var config  = {
 };
 
 var load = function () {
+  var png = document.getElementById("png");
   var copy = document.getElementById("copy");
   var show = document.getElementById("show");
   var undo = document.getElementById("undo");
@@ -569,6 +669,7 @@ var load = function () {
   /*  */
   config.draw.brushing.controls = document.querySelector(".controls");
   config.draw.shape.selector = document.querySelector(".draw-shape-selector");
+  config.draw.background.color = document.getElementById("draw-background-color");
   config.draw.shape.fill.color = document.getElementById("draw-shape-fill-color");
   config.draw.brushing.selector = document.querySelector(".draw-brushing-selector");
   config.draw.shape.fill.opacity = document.getElementById("draw-shape-fill-opacity");
@@ -595,7 +696,10 @@ var load = function () {
   }, false);
   /*  */
   document.addEventListener("keydown", function (e) {
+    var key = e.key ? e.key : e.code;
+    var arrow = key.indexOf("Arrow") === 0;
     var code = e.keyCode ? e.keyCode : e.which;
+    /*  */
     config.draw.keyborad.code = code;
     /*  */
     if (e.ctrlKey && code === 67) config.draw.copy();
@@ -603,6 +707,9 @@ var load = function () {
     if (e.ctrlKey && code === 90) config.draw.undo();
     if (e.ctrlKey && code === 86) config.draw.paste();
     if (code === 46) config.draw.remove.active.objects();
+    if (arrow) config.draw.action.move(code, e.shiftKey);
+    if (code === 188 || code === 190) config.draw.action.resize(code);
+    if (code === 219 || code === 221) config.draw.action.rotate(code);
   });
   /*  */
   save.addEventListener("click", function () {
@@ -615,8 +722,9 @@ var load = function () {
   clear.addEventListener("click", function () {
     var flag = window.confirm("Are you sure you want to clear all drawings?");
     if (flag) {
-      config.draw.canvas.clear();
       config.storage.write("last.draw", '');
+      config.draw.canvas.clear();
+      document.location.reload();
     }
   });
   /*  */
@@ -630,6 +738,7 @@ var load = function () {
   hide.addEventListener("click", function () {config.controls.hide()});
   zoomin.addEventListener("click", function () {config.draw.zoom.in()});
   zoomout.addEventListener("click", function () {config.draw.zoom.out()});
+  png.addEventListener("click", function () {config.draw.convert.to.png()});
   reload.addEventListener("click", function () {document.location.reload()});
   close.addEventListener("click", function () {chrome.runtime.sendMessage({"action": "close"})});
   /*  */

@@ -51,6 +51,13 @@
 					</td>
 				</tr>
 				<tr>
+					<td id="png" title="Save Dawing Only as a PNG file">
+						<svg width="10" height="10" viewBox="0 0 32 32">
+							<path d="M28,8h-4l-4-4h-8.001L8,8H4c0,0-4,0-4,4c0,2.137,0,9.41,0,12c0,4,4,4,4,4s21.281,0,24,0c4,0,4-4,4-4s0-8,0-12S28,8,28,8z M16,24c-3.316,0-6-2.684-6-6c0-3.312,2.684-6,6-6c3.311,0,6,2.688,6,6C22,21.316,19.311,24,16,24z"/>
+						</svg>
+					</td>
+				</tr>
+				<tr>
 					<td id="print" title="Print Drawing">
 						<svg width="10" height="10" viewBox="0 0 122.8799 122.8799">
 							<path d="M 20.088461,7.796912 C 20.115373,17.021043 20.088461,22.426355 20.088461,31.855404 H 1.3632812 V 72.542113 93.182435 H 8.5107284 16.868272 V 83.966309 H 10.579408 V 69.439095 H 112.60728 V 83.966309 H 106.34266 V 93.182435 H 121.84766 V 83.966309 H 121.82342 V 63.57649 31.855404 C 121.69342,31.83149 121.58213,31.806716 121.45372,31.782677 V 31.855404 H 102.72854 V 7.796912 Z M 20.19553,76.671389 V 115.21871 H 103.0942 V 76.671389 Z"/>
@@ -103,14 +110,16 @@
 						<button drag="disabled" id="Move" title="Move objects"></button>
 					</div>
 					<div class="item title flex">
-						<label class="button" for="draw-brushing-line-color">Line color</label>
-						<label class="button" for="draw-shape-fill-color">Fill color</label>
-						<label class="button" for="draw-brushing-stroke-color">Stroke color</label>
-						<label class="button" for="draw-brushing-shadow-color">Shadow color</label>
+						<label class="button" for="draw-brushing-line-color">Line</label>
+						<label class="button" for="draw-shape-fill-color">Fill</label>
+						<label class="button" for="draw-background-color">Background</label>
+						<label class="button" for="draw-brushing-stroke-color">Stroke</label>
+						<label class="button" for="draw-brushing-shadow-color">Shadow</label>
 					</div>
 					<div class="item flex">
 						<input drag="disabled" type="color" id="draw-brushing-line-color">
 						<input drag="disabled" type="color" id="draw-shape-fill-color">
+						<input drag="disabled" type="color" id="draw-background-color">
 						<input drag="disabled" type="color" id="draw-brushing-stroke-color">
 						<input drag="disabled" type="color" id="draw-brushing-shadow-color">
 					</div>
@@ -142,8 +151,8 @@
 				</div>
 				<div class="separator flex"></div>
 				<div class="button flex fixed">
-					<button drag="disabled" id="zoom-in" title="Zoom in (Ctrl + mouse wheel up)"></button>
-					<button drag="disabled" id="zoom-out" title="Zoom out (Ctrl + mouse wheel down)"></button>
+					<button drag="disabled" id="zoom-in" title="Zoom in (Shift + mouse wheel up)"></button>
+					<button drag="disabled" id="zoom-out" title="Zoom out (Shift + mouse wheel down)"></button>
 				</div>
 				<div class="button flex">
 					<button drag="disabled" id="copy" title="Copy selection"></button>
