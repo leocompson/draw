@@ -1,18 +1,46 @@
-if (!config) {
+if (!background) {
+  var background = (function () {
+    var tmp = {};
+    /*  */
+    chrome.runtime.onMessage.addListener(function (request) {
+      for (var id in tmp) {
+        if (tmp[id] && (typeof tmp[id] === "function")) {
+          if (request.path === "background-to-page") {
+            if (request.method === id) {
+              tmp[id](request.data);
+            }
+          }
+        }
+      }
+    });
+    /*  */
+    return {
+      "receive": function (id, callback) {
+        tmp[id] = callback;
+      },
+      "send": function (id, data) {
+        chrome.runtime.sendMessage({
+          "method": id, 
+          "data": data,
+          "path": "page-to-background"
+        });
+      }
+    }
+  })();
+  
   var config = {
     "iframe": null,
-    "listener": function (request, sender, sendResponse) {    
-      if (request.action === "print") window.print();
-      if (request.action === "close") config.interface.hide();
-    },
     "interface": {
+      "print": function () {    
+        window.print();
+      },
       "toggle": function () {
         config.iframe = document.querySelector(".draw-on-page-parent-iframe");
         config.interface[config.iframe ? "hide" : "show"]();
       },
       "hide": function () {
+        background.send("icon", {"path": "OFF"});
         config.iframe.remove();
-        chrome.runtime.sendMessage({"action": "icon", "state": "OFF"});
       },
       "show": function () {
         config.iframe = document.createElement("iframe");
@@ -32,12 +60,13 @@ if (!config) {
         config.iframe.style.background = "transparent";
         /*  */
         document.documentElement.appendChild(config.iframe);
-        chrome.runtime.sendMessage({"action": "icon", "state": "ON"});
+        background.send("icon", {"path": "ON"});
       }
     }
   };
   /*  */
-  chrome.runtime.onMessage.addListener(config.listener);
+  background.receive("close", config.interface.hide);
+  background.receive("print", config.interface.print);
 }
 
 config.interface.toggle();

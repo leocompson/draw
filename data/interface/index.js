@@ -1,13 +1,71 @@
+var background = {
+  "port": null,
+  "message": {},
+  "receive": function (id, callback) {
+    if (id) {
+      background.message[id] = callback;
+    }
+  },
+  "connect": function (port) {
+    chrome.runtime.onMessage.addListener(background.listener); 
+    /*  */
+    if (port) {
+      background.port = port;
+      background.port.onMessage.addListener(background.listener);
+      background.port.onDisconnect.addListener(function () {
+        background.port = null;
+      });
+    }
+  },
+  "send": function (id, data) {
+    if (id) {
+      if (background.port.name !== "webapp") {
+        chrome.runtime.sendMessage({
+          "method": id,
+          "data": data,
+          "path": "interface-to-background"
+        }); 
+      }
+    }
+  },
+  "post": function (id, data) {
+    if (id) {
+      if (background.port) {
+        background.port.postMessage({
+          "method": id,
+          "data": data,
+          "port": background.port.name,
+          "path": "interface-to-background"
+        });
+      }
+    }
+  },
+  "listener": function (e) {
+    if (e) {
+      for (var id in background.message) {
+        if (background.message[id]) {
+          if ((typeof background.message[id]) === "function") {
+            if (e.path === "background-to-interface") {
+              if (e.method === id) {
+                background.message[id](e.data);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
 var config  = {
-  "resize": {"timeout": null},
   "addon": {
     "homepage": function () {
       return chrome.runtime.getManifest().homepage_url;
     }
   },
   "print": function () {
-    if (config.connect.name === "page") {
-      chrome.runtime.sendMessage({"action": "print"});
+    if (config.port.name === "page") {
+      background.send("print");
     } else {
       window.print();
     }
@@ -22,30 +80,29 @@ var config  = {
       target.style.display = target.style.display === "none" ? "block" : "none";
     }
   },
-  "connect": {
-    "port": '',
-    "name": "webapp",
-    "to": {
-      "background": {
-        "page": function () {
-          if (config.connect.name === "popup") {
-            document.body.style.width = "800px";
-            document.body.style.height = "580px";
-            document.documentElement.setAttribute("context", "extension");
-          }
+  "resize": {
+    "timeout": null,
+    "method": function () {
+      if (config.port.name === "win") {
+        if (config.resize.timeout) window.clearTimeout(config.resize.timeout);
+        config.resize.timeout = window.setTimeout(async function () {
+          var current = await chrome.windows.getCurrent();
           /*  */
-          if (config.connect.name === "page" || config.connect.name === "webapp") {
-            document.documentElement.setAttribute("context", config.connect.name);
-          } else {
-            config.connect.port = chrome.runtime.connect({"name": config.connect.name});
-          }
-        }
+          config.storage.write("interface.size", {
+            "top": current.top,
+            "left": current.left,
+            "width": current.width,
+            "height": current.height
+          });
+        }, 1000);
       }
     }
   },
   "storage": {
     "local": {},
-    "read": function (id) {return config.storage.local[id]},
+    "read": function (id) {
+      return config.storage.local[id];
+    },
     "load": function (callback) {
       chrome.storage.local.get(null, function (e) {
         config.storage.local = e;
@@ -64,6 +121,34 @@ var config  = {
           chrome.storage.local.remove(id, function () {});
         }
       }
+    }
+  },
+  "port": {
+    "name": '',
+    "connect": function () {
+      config.port.name = "webapp";
+      var context = document.documentElement.getAttribute("context");
+      /*  */
+      if (chrome.runtime) {
+        if (chrome.runtime.connect) {
+          if (context !== config.port.name) {
+            if (document.location.search === "?tab") config.port.name = "tab";
+            if (document.location.search === "?win") config.port.name = "win";
+            if (document.location.search === "?page") config.port.name = "page";
+            if (document.location.search === "?popup") config.port.name = "popup";
+            /*  */
+            if (config.port.name === "popup") {
+              document.body.style.width = "800px";
+              document.body.style.height = "580px";
+              document.documentElement.setAttribute("context", "extension");
+            }
+            /*  */
+            background.connect(chrome.runtime.connect({"name": config.port.name}));
+          }
+        }
+      }
+      /*  */
+      document.documentElement.setAttribute("context", config.port.name);
     }
   },
   "render": {
@@ -97,7 +182,7 @@ var config  = {
       var width = computed ? parseInt(computed.width) : 800;
       
       config.draw.options.width = config.draw.options.height = width;
-      config.draw.options.backgroundColor = config.connect.name === "page" ? "transparent" : config.draw.background.color.value;
+      config.draw.options.backgroundColor = config.port.name === "page" ? "transparent" : config.draw.background.color.value;
       /*  */      
       config.draw.canvas = new fabric.Canvas(config.draw.id, config.draw.options);
       config.draw.canvas.on("object:modified", config.listeners.object.updated);
@@ -123,7 +208,7 @@ var config  = {
       var last = config.storage.read("last.draw");
       if (last) {
         config.draw.canvas.loadFromJSON(JSON.parse(last));
-        if (config.connect.name === "page") {
+        if (config.port.name === "page") {
           config.draw.canvas.backgroundColor = "transparent";
         }
         /*  */
@@ -365,8 +450,8 @@ var config  = {
       /*  */
       config.draw.background.color.addEventListener("input", function () {
         config.storage.write("background.color", this.value);
-        config.draw.canvas.backgroundColor = config.connect.name === "page" ? "transparent" : this.value;
-        config.draw.options.backgroundColor = config.connect.name === "page" ? "transparent" : this.value;
+        config.draw.canvas.backgroundColor = config.port.name === "page" ? "transparent" : this.value;
+        config.draw.options.backgroundColor = config.port.name === "page" ? "transparent" : this.value;
         /*  */
         config.draw.canvas.renderAll();
         config.listeners.object.updated();
@@ -466,6 +551,103 @@ var config  = {
       window.addEventListener("mouseup", function () {config.draw.brushing.controls.removeEventListener("mousemove", mousemove, false)}, false);
       window.addEventListener("touchend", function () {config.draw.brushing.controls.removeEventListener("touchmove", touchmove, false)}, false);
     }
+  },
+  "load": function () {
+    var png = document.getElementById("png");
+    var copy = document.getElementById("copy");
+    var show = document.getElementById("show");
+    var undo = document.getElementById("undo");
+    var redo = document.getElementById("redo");
+    var hide = document.getElementById("hide");
+    var save = document.getElementById("save");
+    var paste = document.getElementById("paste");
+    var close = document.getElementById("close");
+    var clear = document.getElementById("clear");
+    var print = document.getElementById("print");
+    var remove = document.getElementById("remove");
+    var reload = document.getElementById("reload");
+    var zoomin = document.getElementById("zoom-in");
+    var support = document.getElementById("support");
+    var zoomout = document.getElementById("zoom-out");
+    var donation = document.getElementById("donation");
+    /*  */
+    config.draw.brushing.controls = document.querySelector(".controls");
+    config.draw.shape.selector = document.querySelector(".draw-shape-selector");
+    config.draw.background.color = document.getElementById("draw-background-color");
+    config.draw.shape.fill.color = document.getElementById("draw-shape-fill-color");
+    config.draw.brushing.selector = document.querySelector(".draw-brushing-selector");
+    config.draw.shape.fill.opacity = document.getElementById("draw-shape-fill-opacity");
+    config.draw.brushing.line.color = document.getElementById("draw-brushing-line-color");
+    config.draw.brushing.line.width = document.getElementById("draw-brushing-line-width");
+    config.draw.shape.stroke.width = document.getElementById("draw-brushing-stroke-width");
+    config.draw.shape.stroke.color = document.getElementById("draw-brushing-stroke-color");
+    config.draw.brushing.line.opacity = document.getElementById("draw-brushing-line-opacity");
+    config.draw.brushing.shadow.width = document.getElementById("draw-brushing-shadow-width");
+    config.draw.brushing.shadow.color = document.getElementById("draw-brushing-shadow-color");
+    config.draw.brushing.shadow.offset = document.getElementById("draw-brushing-shadow-offset");
+    /*  */
+    config.draw.shape.selector.addEventListener("click", config.listeners.selector.shape);
+    config.draw.brushing.selector.addEventListener("click", config.listeners.selector.brushing);
+    /*  */
+    support.addEventListener("click", function () {
+      var url = config.addon.homepage();
+      chrome.tabs.create({"url": url, "active": true});
+    }, false);
+    /*  */
+    donation.addEventListener("click", function () {
+      var url = config.addon.homepage() + "?reason=support";
+      chrome.tabs.create({"url": url, "active": true});
+    }, false);
+    /*  */
+    document.addEventListener("keydown", function (e) {
+      var key = e.key ? e.key : e.code;
+      var arrow = key.indexOf("Arrow") === 0;
+      var code = e.keyCode ? e.keyCode : e.which;
+      /*  */
+      config.draw.keyborad.code = code;
+      /*  */
+      if (e.ctrlKey && code === 67) config.draw.copy();
+      if (e.ctrlKey && code === 89) config.draw.redo();
+      if (e.ctrlKey && code === 90) config.draw.undo();
+      if (e.ctrlKey && code === 86) config.draw.paste();
+      if (code === 46) config.draw.remove.active.objects();
+      if (arrow) config.draw.action.move(code, e.shiftKey);
+      if (code === 188 || code === 190) config.draw.action.resize(code);
+      if (code === 219 || code === 221) config.draw.action.rotate(code);
+    });
+    /*  */
+    save.addEventListener("click", function () {
+      var flag = window.confirm("Are you sure you want to save all drawings?");
+      if (flag) {
+        config.draw.save();
+      }
+    });
+    /*  */
+    clear.addEventListener("click", function () {
+      var flag = window.confirm("Are you sure you want to clear all drawings?");
+      if (flag) {
+        config.storage.write("last.draw", '');
+        config.draw.canvas.clear();
+        document.location.reload();
+      }
+    });
+    /*  */
+    print.addEventListener("click", function () {config.print()});
+    undo.addEventListener("click", function () {config.draw.undo()});
+    redo.addEventListener("click", function () {config.draw.redo()});
+    copy.addEventListener("click", function () {config.draw.copy()});
+    paste.addEventListener("click", function () {config.draw.paste()});
+    remove.addEventListener("click", config.draw.remove.active.objects);
+    show.addEventListener("click", function () {config.controls.show()});
+    hide.addEventListener("click", function () {config.controls.hide()});
+    zoomin.addEventListener("click", function () {config.draw.zoom.in()});
+    close.addEventListener("click", function () {background.send("close")});
+    zoomout.addEventListener("click", function () {config.draw.zoom.out()});
+    png.addEventListener("click", function () {config.draw.convert.to.png()});
+    reload.addEventListener("click", function () {document.location.reload()});
+    /*  */
+    config.storage.load(config.app.start);
+    window.removeEventListener("load", config.load, false);
   },
   "listeners": {
     "object": {
@@ -648,116 +830,7 @@ var config  = {
   }
 };
 
-var load = function () {
-  var png = document.getElementById("png");
-  var copy = document.getElementById("copy");
-  var show = document.getElementById("show");
-  var undo = document.getElementById("undo");
-  var redo = document.getElementById("redo");
-  var hide = document.getElementById("hide");
-  var save = document.getElementById("save");
-  var paste = document.getElementById("paste");
-  var close = document.getElementById("close");
-  var clear = document.getElementById("clear");
-  var print = document.getElementById("print");
-  var remove = document.getElementById("remove");
-  var reload = document.getElementById("reload");
-  var zoomin = document.getElementById("zoom-in");
-  var support = document.getElementById("support");
-  var zoomout = document.getElementById("zoom-out");
-  var donation = document.getElementById("donation");
-  /*  */
-  config.draw.brushing.controls = document.querySelector(".controls");
-  config.draw.shape.selector = document.querySelector(".draw-shape-selector");
-  config.draw.background.color = document.getElementById("draw-background-color");
-  config.draw.shape.fill.color = document.getElementById("draw-shape-fill-color");
-  config.draw.brushing.selector = document.querySelector(".draw-brushing-selector");
-  config.draw.shape.fill.opacity = document.getElementById("draw-shape-fill-opacity");
-  config.draw.brushing.line.color = document.getElementById("draw-brushing-line-color");
-  config.draw.brushing.line.width = document.getElementById("draw-brushing-line-width");
-  config.draw.shape.stroke.width = document.getElementById("draw-brushing-stroke-width");
-  config.draw.shape.stroke.color = document.getElementById("draw-brushing-stroke-color");
-  config.draw.brushing.line.opacity = document.getElementById("draw-brushing-line-opacity");
-  config.draw.brushing.shadow.width = document.getElementById("draw-brushing-shadow-width");
-  config.draw.brushing.shadow.color = document.getElementById("draw-brushing-shadow-color");
-  config.draw.brushing.shadow.offset = document.getElementById("draw-brushing-shadow-offset");
-  /*  */
-  config.draw.shape.selector.addEventListener("click", config.listeners.selector.shape);
-  config.draw.brushing.selector.addEventListener("click", config.listeners.selector.brushing);
-  /*  */
-  support.addEventListener("click", function () {
-    var url = config.addon.homepage();
-    chrome.tabs.create({"url": url, "active": true});
-  }, false);
-  /*  */
-  donation.addEventListener("click", function () {
-    var url = config.addon.homepage() + "?reason=support";
-    chrome.tabs.create({"url": url, "active": true});
-  }, false);
-  /*  */
-  document.addEventListener("keydown", function (e) {
-    var key = e.key ? e.key : e.code;
-    var arrow = key.indexOf("Arrow") === 0;
-    var code = e.keyCode ? e.keyCode : e.which;
-    /*  */
-    config.draw.keyborad.code = code;
-    /*  */
-    if (e.ctrlKey && code === 67) config.draw.copy();
-    if (e.ctrlKey && code === 89) config.draw.redo();
-    if (e.ctrlKey && code === 90) config.draw.undo();
-    if (e.ctrlKey && code === 86) config.draw.paste();
-    if (code === 46) config.draw.remove.active.objects();
-    if (arrow) config.draw.action.move(code, e.shiftKey);
-    if (code === 188 || code === 190) config.draw.action.resize(code);
-    if (code === 219 || code === 221) config.draw.action.rotate(code);
-  });
-  /*  */
-  save.addEventListener("click", function () {
-    var flag = window.confirm("Are you sure you want to save all drawings?");
-    if (flag) {
-      config.draw.save();
-    }
-  });
-  /*  */
-  clear.addEventListener("click", function () {
-    var flag = window.confirm("Are you sure you want to clear all drawings?");
-    if (flag) {
-      config.storage.write("last.draw", '');
-      config.draw.canvas.clear();
-      document.location.reload();
-    }
-  });
-  /*  */
-  print.addEventListener("click", function () {config.print()});
-  undo.addEventListener("click", function () {config.draw.undo()});
-  redo.addEventListener("click", function () {config.draw.redo()});
-  copy.addEventListener("click", function () {config.draw.copy()});
-  paste.addEventListener("click", function () {config.draw.paste()});
-  remove.addEventListener("click", config.draw.remove.active.objects);
-  show.addEventListener("click", function () {config.controls.show()});
-  hide.addEventListener("click", function () {config.controls.hide()});
-  zoomin.addEventListener("click", function () {config.draw.zoom.in()});
-  zoomout.addEventListener("click", function () {config.draw.zoom.out()});
-  png.addEventListener("click", function () {config.draw.convert.to.png()});
-  reload.addEventListener("click", function () {document.location.reload()});
-  close.addEventListener("click", function () {chrome.runtime.sendMessage({"action": "close"})});
-  /*  */
-  config.storage.load(config.app.start);
-  window.removeEventListener("load", load, false);
-};
+config.port.connect();
 
-window.addEventListener("resize", function () {
-  if (config.resize.timeout) window.clearTimeout(config.resize.timeout);
-  config.resize.timeout = window.setTimeout(function () {
-    config.storage.write("width", window.innerWidth || window.outerWidth);
-    config.storage.write("height", window.innerHeight || window.outerHeight);
-  }, 1000);
-}, false);
-
-if (document.location.search === "?tab") config.connect.name = "tab";
-if (document.location.search === "?win") config.connect.name = "win";
-if (document.location.search === "?page") config.connect.name = "page";
-if (document.location.search === "?popup") config.connect.name = "popup";
-
-config.connect.to.background.page();
-window.addEventListener("load", load, false);
+window.addEventListener("load", config.load, false);
+window.addEventListener("resize", config.resize.method, false);

@@ -9,7 +9,7 @@ body {
   border: 0;
   padding: 0;
   overflow: hidden;
-  font-family: arial, sans-serif;
+  font-family: monaco, "andale mono", "lucida console", "courier new", monospace;
 }
 
 .close, .actions, .toolbar {
@@ -36,9 +36,9 @@ body {
   cursor: pointer;
   user-select: none;
   text-align: center;
-  font-family: arial, sans-serif;
   background-color: rgba(0,0,0,0.1);
   transition: 300ms ease background-color;
+  font-family: monaco, "andale mono", "lucida console", "courier new", monospace;
 }
 
 .close > table tr td:hover, .toolbar > table tr td:hover, .actions > table tr td:hover {
@@ -86,7 +86,7 @@ body {
 }
 
 .controls {
-  width: 250px;
+  width: 260px;
   padding: 5px;
   cursor: move;
   display: none;
@@ -133,9 +133,9 @@ body {
   font-size: 12px;
   text-decoration: none;
   background-color: #fff;
-  font-family: arial, sans-serif;
   background-size: 16px !important;
   transition: 300ms ease background-color;
+  font-family: monaco, "andale mono", "lucida console", "courier new", monospace;
 }
 
 .controls .options .item button:hover {
@@ -152,19 +152,19 @@ body {
   padding: 0;
   color: #555;
   height: 38px;
-  width: 105px;
+  width: 120px;
   cursor: move;
   outline: none;
-  font-size: 12px;
+  font-size: 11px;
   text-align: left;
   user-select: none;
   line-height: 38px;
   display: inline-block;
   background-color: #fff;
   vertical-align: middle;
-  font-family: arial, sans-serif;
   background-size: 16px !important;
   transition: 300ms ease background-color;
+  font-family: monaco, "andale mono", "lucida console", "courier new", monospace;
 }
 
 .controls .options div[class*='title'] {
@@ -241,22 +241,24 @@ body {
 .controls .options input[type="range"] {
   margin: 0;
   padding: 0;
-  width: 78px;
+  width: 72px;
   height: 38px;
   cursor: pointer;
-  margin-left: 10px;
+  margin-left: 5px;
+  box-sizing: border-box;
   vertical-align: middle;
 }
 
 .controls .options input[type="color"] {
   border: 0;
   margin: 0;
-  padding: 5px;
+  padding: 1px;
   height: 32px;
   outline: none;
   cursor: pointer;
   max-width: 48px;
   background: #fff;
+  box-sizing: border-box;
   vertical-align: middle;
 }
 
@@ -273,9 +275,9 @@ body {
   max-width: 38px;
   text-decoration: none;
   background-color: #fff;
-  font-family: arial, sans-serif;
   background-size: 16px !important;
   transition: 300ms ease background-color;
+  font-family: monaco, "andale mono", "lucida console", "courier new", monospace;
 }
 
 .controls .button button:hover {
@@ -285,7 +287,7 @@ body {
 .controls .options .info {
   padding: 0;
   width: 38px;
-  color: #555;
+  color: #333;
   float: right;
   height: 38px;
   font-size: 11px;
@@ -296,7 +298,7 @@ body {
   background-color: #fff;
   vertical-align: middle;
   text-overflow: ellipsis;
-  font-family: monaco, "andale mono", "lucida console", "courier new", monospace;;
+  font-family: monaco, "andale mono", "lucida console", "courier new", monospace;
 }
 
 .canvas-container, .canvas-container canvas {
@@ -307,8 +309,19 @@ body {
   border-bottom: solid 1px rgba(0,0,0,0.1);
 }
 
-html[context="page"] .actions {top: 43px}
-html[context="page"] .close {display: block}
+html[context="popup"] .actions {left: 1px}
+html[context="popup"] .toolbar {right: 1px}
+html[context="popup"] #print {display: none}
+
+html[context="page"] .close {
+  left: 1px;
+  display: block;
+}
+
+html[context="page"] .actions {
+  top: 43px;
+  left: 1px;
+}
 
 html[context="page"] .close > table tr td, 
 html[context="page"] .actions > table tr td {
@@ -320,13 +333,16 @@ html[context="page"] .actions > table tr td svg {
   fill: #fff;
 }
 
-html[context="page"] .toolbar, 
-html[context="webapp"] .toolbar {
+html[context="page"] .toolbar {
   display: none;
 }
 
 html[context="page"] .controls {
   border: solid 1px #1e90ff;
+}
+
+html[context="webapp"] .toolbar {
+  display: none;
 }
 
 html[context="webapp"] .controls {
