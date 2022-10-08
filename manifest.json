@@ -1,9 +1,8 @@
 {
-  "version": "0.1.2",
+  "version": "0.1.4",
   "manifest_version": 3,
   "name": "Draw on Page",
   "offline_enabled": true,
-  "short_name": "draw-on-page",
   "homepage_url": "https://mybrowseraddon.com/draw-on-page.html",
   "description": "Easily draw on any website with simple drawing tools, then print the result.",
   "commands": {
@@ -13,7 +12,7 @@
     "service_worker": "background.js"
   },
   "web_accessible_resources": [{
-    "matches": ["*://*/*"],
+    "matches": ["<all_urls>"],
     "resources": ["data/interface/index.html"]
   }],
   "permissions": [

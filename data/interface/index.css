@@ -1,3 +1,7 @@
+:root {
+  --theme-color: #0075ff;
+}
+
 html {
   width: 100%;
   height: 100%;
@@ -9,7 +13,7 @@ body {
   border: 0;
   padding: 0;
   overflow: hidden;
-  font-family: monaco, "andale mono", "lucida console", "courier new", monospace;
+  font-family: monaco, 'andale mono', 'lucida console', 'courier new', monospace;
 }
 
 .close, .actions, .toolbar {
@@ -36,13 +40,13 @@ body {
   cursor: pointer;
   user-select: none;
   text-align: center;
+  transition: 300ms ease filter;
   background-color: rgba(0,0,0,0.1);
-  transition: 300ms ease background-color;
-  font-family: monaco, "andale mono", "lucida console", "courier new", monospace;
+  font-family: monaco, 'andale mono', 'lucida console', 'courier new', monospace;
 }
 
 .close > table tr td:hover, .toolbar > table tr td:hover, .actions > table tr td:hover {
-  background-color: rgba(0,0,0,0.05);
+  background-color: rgba(0,0,0,0.15);
 }
 
 .close > table tr td svg, .toolbar > table tr td svg, .actions > table tr td svg {
@@ -125,7 +129,7 @@ body {
   margin: 0;
   border: 0;
   padding: 0;
-  color: #555;
+  color: #333;
   width: 100%;
   height: 38px;
   outline: none;
@@ -135,7 +139,7 @@ body {
   background-color: #fff;
   background-size: 16px !important;
   transition: 300ms ease background-color;
-  font-family: monaco, "andale mono", "lucida console", "courier new", monospace;
+  font-family: monaco, 'andale mono', 'lucida console', 'courier new', monospace;
 }
 
 .controls .options .item button:hover {
@@ -150,7 +154,7 @@ body {
   margin: 0;
   border: 0;
   padding: 0;
-  color: #555;
+  color: #333;
   height: 38px;
   width: 120px;
   cursor: move;
@@ -164,7 +168,7 @@ body {
   vertical-align: middle;
   background-size: 16px !important;
   transition: 300ms ease background-color;
-  font-family: monaco, "andale mono", "lucida console", "courier new", monospace;
+  font-family: monaco, 'andale mono', 'lucida console', 'courier new', monospace;
 }
 
 .controls .options div[class*='title'] {
@@ -173,7 +177,7 @@ body {
 }
 
 .controls .options div[class*='title'] label {
-  color: #999;
+  color: #777;
   height: 18px;
   font-size: 11px;
   line-height: 18px;
@@ -186,13 +190,14 @@ body {
 }
 
 .controls .options label[class='button'][selected] {
-  color: #fff;
-  background-color: #1e90ff;
+  font-weight: 600;
+  color: var(--theme-color);
 }
 
 .controls .options .shrink {
   padding: 0 5px;
   margin-bottom: 0;
+  box-sizing: content-box;
 }
 
 .controls .options .item #Spray {background: url('icons/Spray.png') no-repeat center center}
@@ -210,11 +215,24 @@ body {
 .controls .button #copy {background: url('icons/Copy.png') no-repeat center center}
 .controls .button #save {background: url('icons/Save.png') no-repeat center center}
 .controls .button #hide {background: url('icons/Hide.png') no-repeat center center}
+.controls .button #theme {background: url('icons/Theme.png') no-repeat center center}
 .controls .button #paste {background: url('icons/Paste.png') no-repeat center center}
 .controls .button #clear {background: url('icons/Clear.png') no-repeat center center}
 .controls .button #remove {background: url('icons/Remove.png') no-repeat center center}
 .controls .button #zoom-in {background: url('icons/Zoom-in.png') no-repeat center center}
 .controls .button #zoom-out {background: url('icons/Zoom-out.png') no-repeat center center}
+
+.controls .button #theme-color {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  width: 38px;
+  right: 42px;
+  bottom: 10px;
+  outline: none;
+  position: absolute;
+  visibility: hidden;
+}
 
 .hide {
   display: none;
@@ -238,7 +256,7 @@ body {
   background-color: #d8d8d8 !important;
 }
 
-.controls .options input[type="range"] {
+.controls .options input[type='range'] {
   margin: 0;
   padding: 0;
   width: 72px;
@@ -247,9 +265,14 @@ body {
   margin-left: 5px;
   box-sizing: border-box;
   vertical-align: middle;
+  accent-color: var(--theme-color);
 }
 
-.controls .options input[type="color"] {
+.controls .options input[type='range']:focus {
+  outline: none;
+}
+
+.controls .options input[type='color'] {
   border: 0;
   margin: 0;
   padding: 1px;
@@ -266,7 +289,7 @@ body {
   margin: 0;
   border: 0;
   padding: 0;
-  color: #555;
+  color: #333;
   width: 100%;
   height: 38px;
   outline: none;
@@ -277,11 +300,11 @@ body {
   background-color: #fff;
   background-size: 16px !important;
   transition: 300ms ease background-color;
-  font-family: monaco, "andale mono", "lucida console", "courier new", monospace;
+  font-family: monaco, 'andale mono', 'lucida console', 'courier new', monospace;
 }
 
 .controls .button button:hover {
-  background-color: rgba(0,0,0,0.1);
+  background-color: rgba(0,0,0,0.1) !important;
 }
 
 .controls .options .info {
@@ -298,7 +321,7 @@ body {
   background-color: #fff;
   vertical-align: middle;
   text-overflow: ellipsis;
-  font-family: monaco, "andale mono", "lucida console", "courier new", monospace;
+  font-family: monaco, 'andale mono', 'lucida console', 'courier new', monospace;
 }
 
 .canvas-container, .canvas-container canvas {
@@ -309,43 +332,48 @@ body {
   border-bottom: solid 1px rgba(0,0,0,0.1);
 }
 
-html[context="popup"] .actions {left: 1px}
-html[context="popup"] .toolbar {right: 1px}
-html[context="popup"] #print {display: none}
+html[context='popup'] .actions {left: 1px}
+html[context='popup'] .toolbar {right: 1px}
+html[context='popup'] #print {display: none}
 
-html[context="page"] .close {
+html[context='page'] .close {
   left: 1px;
   display: block;
 }
 
-html[context="page"] .actions {
+html[context='page'] .actions {
   top: 43px;
   left: 1px;
 }
 
-html[context="page"] .close > table tr td, 
-html[context="page"] .actions > table tr td {
-  background-color: #1e90ff;
+html[context='page'] .close > table tr td, 
+html[context='page'] .actions > table tr td {
+  background-color: var(--theme-color);
 }
 
-html[context="page"] .close > table tr td svg, 
-html[context="page"] .actions > table tr td svg {
+html[context='page'] .close > table tr td:hover,
+html[context='page'] .actions > table tr td:hover {
+  filter: brightness(95%) !important;
+}
+
+html[context='page'] .close > table tr td svg, 
+html[context='page'] .actions > table tr td svg {
   fill: #fff;
 }
 
-html[context="page"] .toolbar {
+html[context='page'] .toolbar {
   display: none;
 }
 
-html[context="page"] .controls {
-  border: solid 1px #1e90ff;
+html[context='page'] .controls {
+  border: solid 1px var(--theme-color);
 }
 
-html[context="webapp"] .toolbar {
+html[context='webapp'] .toolbar {
   display: none;
 }
 
-html[context="webapp"] .controls {
+html[context='webapp'] .controls {
   top: 1px;
   right: 1px;
   left: unset;

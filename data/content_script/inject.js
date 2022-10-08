@@ -1,9 +1,9 @@
 if (!background) {
   var background = (function () {
-    var tmp = {};
+    let tmp = {};
     /*  */
     chrome.runtime.onMessage.addListener(function (request) {
-      for (var id in tmp) {
+      for (let id in tmp) {
         if (tmp[id] && (typeof tmp[id] === "function")) {
           if (request.path === "background-to-page") {
             if (request.method === id) {
@@ -23,6 +23,8 @@ if (!background) {
           "method": id, 
           "data": data,
           "path": "page-to-background"
+        }, function () {
+          return chrome.runtime.lastError;
         });
       }
     }
