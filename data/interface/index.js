@@ -80,7 +80,7 @@ var config  = {
       if (config.port.name === "win") {
         if (config.resize.timeout) window.clearTimeout(config.resize.timeout);
         config.resize.timeout = window.setTimeout(async function () {
-          let current = await chrome.windows.getCurrent();
+          const current = await chrome.windows.getCurrent();
           /*  */
           config.storage.write("interface.size", {
             "top": current.top,
@@ -94,8 +94,8 @@ var config  = {
   },
   "controls": {
     "hide": function () {
-      let show = document.querySelector("#show");
-      let target = document.querySelector(".controls");
+      const show = document.querySelector("#show");
+      const target = document.querySelector(".controls");
       /*  */
       show.title = "Show Controls";
       target.style.display = "none";
@@ -103,8 +103,8 @@ var config  = {
       
     },
     "show": function () {
-      let show = document.querySelector("#show");
-      let target = document.querySelector(".controls");
+      const show = document.querySelector("#show");
+      const target = document.querySelector(".controls");
       /*  */
       target.style.display = target.style.display === "none" ? "block" : "none";
       show.title = target.style.display === "block" ? "Hide Controls" : "Show Controls";
@@ -140,7 +140,7 @@ var config  = {
     "name": '',
     "connect": function () {
       config.port.name = "webapp";
-      let context = document.documentElement.getAttribute("context");
+      const context = document.documentElement.getAttribute("context");
       /*  */
       if (chrome.runtime) {
         if (chrome.runtime.connect) {
@@ -167,12 +167,12 @@ var config  = {
   "render": {
     "selected": function () {
       if (config.draw.mode === "brushing") {
-        let brushing = config.draw.brushing.selector.getAttribute("selected");
+        const brushing = config.draw.brushing.selector.getAttribute("selected");
         if (brushing) {
           config.draw.brushing.selector.querySelector('#' + brushing).setAttribute("selected", '');
         }
       } else {
-        let shape = config.draw.shape.selector.getAttribute("selected");
+        const shape = config.draw.shape.selector.getAttribute("selected");
         if (shape) {
           config.draw.shape.selector.querySelector('#' + shape).setAttribute("selected", '');
         }
@@ -180,6 +180,7 @@ var config  = {
     },
     "interface": function () {
       config.draw.mode = config.storage.read("draw.mode") !== undefined ? config.storage.read("draw.mode") : "brushing";
+      config.draw.theme.dark = config.storage.read("theme.dark") !== undefined ? config.storage.read("theme.dark") : false;
       config.draw.theme.color = config.storage.read("theme.color") !== undefined ? config.storage.read("theme.color") : "#0075ff";
       config.draw.brushing.line.width.value = config.storage.read("line.width") !== undefined ? config.storage.read("line.width") : 20;
       config.draw.shape.stroke.width.value = config.storage.read("stroke.width") !== undefined ? config.storage.read("stroke.width") : 5;
@@ -206,11 +207,11 @@ var config  = {
       //config.draw.brushing.controls.popup.style.top = config.storage.read("controls.top") !== undefined ? config.storage.read("controls.top") : "100px";
       //config.draw.brushing.controls.popup.style.left = config.storage.read("controls.left") !== undefined ? config.storage.read("controls.left") : "100px";
       /*  */
-      let root = document.documentElement;
-      let show = document.getElementById("show");
-      let color = document.getElementById("theme-color");
-      let computed = window.getComputedStyle(document.body);
-      let width = computed ? parseInt(computed.width) : 800;
+      const root = document.documentElement;
+      const show = document.getElementById("show");
+      const color = document.getElementById("theme-color");
+      const computed = window.getComputedStyle(document.body);
+      const width = computed ? parseInt(computed.width) : 800;
       /*  */
       config.draw.options.width = config.draw.options.height = width;
       config.draw.options.backgroundColor = config.port.name === "page" ? "transparent" : config.draw.background.color.value;
@@ -225,12 +226,13 @@ var config  = {
       /*  */
       color.value = config.draw.theme.color;
       window.setTimeout(config.render.selected, 300);
+      root.setAttribute("theme-dark", config.draw.theme.dark);
       root.style.setProperty("--theme-color", config.draw.theme.color);
       config.draw.canvas.isDrawingMode = config.draw.mode === "brushing";
       config.draw.brushing.controls.popup.style.display = config.draw.brushing.controls.display;
       show.title = config.draw.brushing.controls.display === "block" ? "Hide Controls" : "Show Controls";
       /*  */
-      let last = config.storage.read("last.draw");
+      const last = config.storage.read("last.draw");
       if (last) {
         config.draw.canvas.loadFromJSON(JSON.parse(last));
         if (config.port.name === "page") {
@@ -253,11 +255,11 @@ var config  = {
     "id": "draw-on-page-canvas",
     "options": {"width": 800, "height": 800},
     "save": function () {
-      let current = config.draw.history[config.draw.history.length - 1];
+      const current = config.draw.history[config.draw.history.length - 1];
       config.storage.write("last.draw", JSON.stringify(current));
     },
     "copy": function () {
-      let active = config.draw.canvas.getActiveObject();
+      const active = config.draw.canvas.getActiveObject();
       if (active) {
         active.clone(function (cloned) {
           config.draw.clipboard = cloned;
@@ -268,7 +270,7 @@ var config  = {
       if (config.draw.screen < config.draw.history.length) {
         config.draw.canvas.clear();
         config.draw.canvas.renderAll();
-        let index = config.draw.history.length - 1 - config.draw.screen;
+        const index = config.draw.history.length - 1 - config.draw.screen;
         config.draw.canvas.loadFromJSON(config.draw.history[index - 1]);
         config.draw.canvas.renderAll();
         config.draw.screen += 1;
@@ -278,7 +280,7 @@ var config  = {
       if (config.draw.screen > 0) {
         config.draw.canvas.clear();
         config.draw.canvas.renderAll();
-        let index = config.draw.history.length - 1 - config.draw.screen;
+        const index = config.draw.history.length - 1 - config.draw.screen;
         config.draw.canvas.loadFromJSON(config.draw.history[index + 1]);
         config.draw.canvas.renderAll();
         config.draw.screen -= 1;
@@ -313,8 +315,8 @@ var config  = {
           return ((opacity * 255) | 1 << 8).toString(16).slice(1);
         },
         "png": function () {
-          let a = document.createElement('a');
-          let src = config.draw.canvas.toDataURL({"format": "png", "quality": 1.00});
+          const a = document.createElement('a');
+          const src = config.draw.canvas.toDataURL({"format": "png", "quality": 1.00});
           a.download = "drawing.png";
           a.style.display = "none";
           a.href = src;
@@ -389,12 +391,12 @@ var config  = {
       },
       "update": function () {
         if (config.draw.canvas) {
-          let value = config.draw.brushing.selector.getAttribute("selected");
+          const value = config.draw.brushing.selector.getAttribute("selected");
           if (value) {
-            let key = value + "Brush";
+            const key = value + "Brush";
             config.draw.canvas.freeDrawingBrush = new fabric[key](config.draw.canvas, {"originX": "center", "originY": "center"});
             if (config.draw.canvas.freeDrawingBrush) {
-              let opacity = config.draw.convert.to.hex(config.draw.brushing.line.opacity.value);
+              const opacity = config.draw.convert.to.hex(config.draw.brushing.line.opacity.value);
               /*  */
               config.draw.canvas.freeDrawingBrush.color = config.draw.brushing.line.color.value + opacity;
               config.draw.canvas.freeDrawingBrush.width = parseInt(config.draw.brushing.line.width.value, 10) || 1;
@@ -406,9 +408,9 @@ var config  = {
     },
     "action": {
       "rotate": function (code) {
-        let active = config.draw.canvas.getActiveObject();
+        const active = config.draw.canvas.getActiveObject();
         if (active) {
-          let degrees = code === 219 ? -1 : +1;
+          const degrees = code === 219 ? -1 : +1;
           active.rotate(active.angle + degrees);
           /*  */
           active.setCoords();
@@ -417,7 +419,7 @@ var config  = {
         }
       },
       "move": function (dir, shift) {
-        let active = config.draw.canvas.getActiveObject();
+        const active = config.draw.canvas.getActiveObject();
         if (active) {
           switch (dir) {
             case 38: active.top = active.top - (shift ? 10 : 1); break;
@@ -432,11 +434,11 @@ var config  = {
         }
       },
       "resize": function (code) {
-        let active = config.draw.canvas.getActiveObject();
+        const active = config.draw.canvas.getActiveObject();
         if (active) {
-          let center = active.getCenterPoint();
-          let scale = (code === 188 ? 0.99 : 1.01);
-          let selection = active.type === "activeSelection";
+          const center = active.getCenterPoint();
+          const scale = (code === 188 ? 0.99 : 1.01);
+          const selection = active.type === "activeSelection";
           /*  */
           active.scaleX = active.scaleX * scale;
           active.scaleY = active.scaleY * scale;
@@ -529,11 +531,11 @@ var config  = {
   },
   "make": {
     "draggable": function () {
-      let x = {"init": null, "first": null};
-      let y = {"init": null, "first": null};
+      const x = {"init": null, "first": null};
+      const y = {"init": null, "first": null};
       /*  */
-      let touchmove = function (e) {
-        let touch = e.touches[0];        
+      const touchmove = function (e) {
+        const touch = e.touches[0];        
         if (touch.target.getAttribute("drag") === "disabled") return;
         config.draw.brushing.controls.popup.style.top = y.init + touch.pageY - y.first + "px";
         config.draw.brushing.controls.popup.style.left = x.init + touch.pageX - x.first + "px";
@@ -542,8 +544,8 @@ var config  = {
         config.storage.write("controls.left", config.draw.brushing.controls.popup.style.left);
             };
       /*  */
-      let touchstart = function (e) {
-        let touch = e.touches[0];
+      const touchstart = function (e) {
+        const touch = e.touches[0];
         if (touch.target.getAttribute("drag") === "disabled") return;
         config.draw.brushing.controls.popup.addEventListener("touchmove", touchmove, false);
         e.preventDefault();
@@ -554,7 +556,7 @@ var config  = {
         x.init = config.draw.brushing.controls.popup.offsetLeft;
       };
       /*  */
-      let mousemove = function (e) {
+      const mousemove = function (e) {
         if (e.target.getAttribute("drag") === "disabled") return;
         config.draw.brushing.controls.popup.style.top = y.init + e.pageY - y.first + "px";
         config.draw.brushing.controls.popup.style.left = x.init + e.pageX - x.first + "px";
@@ -563,7 +565,7 @@ var config  = {
         config.storage.write("controls.left", config.draw.brushing.controls.popup.style.left);
       };
       /*  */
-      let mousedown = function (e) {      
+      const mousedown = function (e) {      
         if (e.target.getAttribute("drag") === "disabled") return;
         config.draw.brushing.controls.popup.addEventListener("mousemove", mousemove, false);
         e.preventDefault();
@@ -581,25 +583,26 @@ var config  = {
     }
   },
   "load": function () {
-    let png = document.getElementById("png");
-    let copy = document.getElementById("copy");
-    let show = document.getElementById("show");
-    let undo = document.getElementById("undo");
-    let redo = document.getElementById("redo");
-    let hide = document.getElementById("hide");
-    let save = document.getElementById("save");
-    let theme = document.getElementById("theme");
-    let paste = document.getElementById("paste");
-    let close = document.getElementById("close");
-    let clear = document.getElementById("clear");
-    let print = document.getElementById("print");
-    let remove = document.getElementById("remove");
-    let reload = document.getElementById("reload");
-    let zoomin = document.getElementById("zoom-in");
-    let support = document.getElementById("support");
-    let zoomout = document.getElementById("zoom-out");
-    let donation = document.getElementById("donation");
-    let color = document.getElementById("theme-color");
+    const png = document.getElementById("png");
+    const copy = document.getElementById("copy");
+    const show = document.getElementById("show");
+    const undo = document.getElementById("undo");
+    const redo = document.getElementById("redo");
+    const hide = document.getElementById("hide");
+    const save = document.getElementById("save");
+    const theme = document.getElementById("theme");
+    const paste = document.getElementById("paste");
+    const close = document.getElementById("close");
+    const clear = document.getElementById("clear");
+    const print = document.getElementById("print");
+    const remove = document.getElementById("remove");
+    const reload = document.getElementById("reload");
+    const zoomin = document.getElementById("zoom-in");
+    const dark = document.getElementById("theme-dark");
+    const support = document.getElementById("support");
+    const zoomout = document.getElementById("zoom-out");
+    const donation = document.getElementById("donation");
+    const color = document.getElementById("theme-color");
     /*  */
     config.draw.brushing.controls.popup = document.querySelector(".controls");
     config.draw.shape.selector = document.querySelector(".draw-shape-selector");
@@ -620,30 +623,30 @@ var config  = {
     config.draw.brushing.selector.addEventListener("click", config.listeners.selector.brushing);
     /*  */
     support.addEventListener("click", function () {
-      let url = config.addon.homepage();
+      const url = config.addon.homepage();
       chrome.tabs.create({"url": url, "active": true});
     }, false);
     /*  */
     donation.addEventListener("click", function () {
-      let url = config.addon.homepage() + "?reason=support";
+      const url = config.addon.homepage() + "?reason=support";
       chrome.tabs.create({"url": url, "active": true});
     }, false);
     /*  */
     color.addEventListener("input", function (e) {
-      let root = document.documentElement;
+      const root = document.documentElement;
       config.storage.write("theme.color", e.target.value);
       root.style.setProperty("--theme-color", e.target.value);
     }, false);
     /*  */
     save.addEventListener("click", function () {
-      let flag = window.confirm("Are you sure you want to save all drawings?");
+      const flag = window.confirm("Are you sure you want to save all drawings?");
       if (flag) {
         config.draw.save();
       }
     });
     /*  */
     clear.addEventListener("click", function () {
-      let flag = window.confirm("Are you sure you want to clear all drawings?");
+      const flag = window.confirm("Are you sure you want to clear all drawings?");
       if (flag) {
         config.storage.write("last.draw", '');
         config.draw.canvas.clear();
@@ -651,13 +654,23 @@ var config  = {
       }
     });
     /*  */
+    dark.addEventListener("click", function () {
+      const root = document.documentElement;
+      const dark = root.getAttribute("theme-dark");
+      const state = dark === "true" ? true : false;
+      /*  */
+      root.setAttribute("theme-dark", !state);
+      config.storage.write("theme.dark", !state);
+    });
+    /*  */
     document.addEventListener("keydown", function (e) {
-      let key = e.key ? e.key : e.code;
-      let arrow = key.indexOf("Arrow") === 0;
-      let code = e.keyCode ? e.keyCode : e.which;
+      const key = e.key ? e.key : e.code;
+      const arrow = key.indexOf("Arrow") === 0;
+      const code = e.keyCode ? e.keyCode : e.which;
       /*  */
       config.draw.keyborad.code = code;
       /*  */
+      //if (code === 27) close.click();
       if (e.ctrlKey && code === 67) config.draw.copy();
       if (e.ctrlKey && code === 89) config.draw.redo();
       if (e.ctrlKey && code === 90) config.draw.undo();
@@ -692,7 +705,7 @@ var config  = {
       "updated": function () {
         window.clearTimeout(config.listeners.object.timeout);
         config.listeners.object.timeout = window.setTimeout(function () {          
-          let screen = JSON.stringify(config.draw.canvas);
+          const screen = JSON.stringify(config.draw.canvas);
           if (config.draw.history.indexOf(screen) === -1) {
             config.draw.history.push(screen);
           }
@@ -702,17 +715,17 @@ var config  = {
     "mouse": {
       "up": function () {
         if (config.draw.mode === "shape") {
-          let value = config.draw.shape.selector.getAttribute("selected");
+          const value = config.draw.shape.selector.getAttribute("selected");
           if (value === "Line") config.draw.shape.line.active = false;
         }
       },
       "move": function (o) {
         if (config.draw.mode === "shape") {
-          let value = config.draw.shape.selector.getAttribute("selected");
+          const value = config.draw.shape.selector.getAttribute("selected");
           if (value === "Line") {
             if (config.draw.shape.line.active) {
               config.draw.canvas.selection = false;
-              let pointer = config.draw.canvas.getPointer(o.e);
+              const pointer = config.draw.canvas.getPointer(o.e);
               if (config.draw.shape.line.object) {
                 config.draw.shape.line.object.set({"x2": pointer.x, "y2": pointer.y});
                 config.draw.canvas.renderAll();
@@ -739,10 +752,10 @@ var config  = {
       },
       "down": function (o) {
         if (config.draw.mode === "shape") {
-          let value = config.draw.shape.selector.getAttribute("selected");
+          const value = config.draw.shape.selector.getAttribute("selected");
           if (value === "Line") {
             config.draw.shape.line.active = true;
-            let pointer = config.draw.canvas.getPointer(o.e);
+            const pointer = config.draw.canvas.getPointer(o.e);
             config.draw.shape.line.object = new fabric.Line([pointer.x, pointer.y, pointer.x, pointer.y], {
               "originX": "center",
               "originY": "center",
@@ -805,7 +818,7 @@ var config  = {
           }
           /*  */
           if (e.target.id === "Hexagon") {
-            let points = config.draw.shape.generate.regular.polygon.points(6, 200);
+            const points = config.draw.shape.generate.regular.polygon.points(6, 200);
             config.draw.canvas.add(new fabric.Polygon(points, {
               "top": 200, 
               "left": 200,
@@ -819,7 +832,7 @@ var config  = {
           }
           /*  */
           if (e.target.id === "Octagon") {
-            let points = config.draw.shape.generate.regular.polygon.points(8, 200);
+            const points = config.draw.shape.generate.regular.polygon.points(8, 200);
             config.draw.canvas.add(new fabric.Polygon(points, {
               "top": 200, 
               "left": 200,
