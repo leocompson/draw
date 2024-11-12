@@ -50,7 +50,7 @@ body {
 }
 
 .close > table tr td svg, .toolbar > table tr td svg, .actions > table tr td svg {
-  fill: #777;
+  fill: #555;
   pointer-events: none;
   vertical-align: middle;
 }
@@ -154,7 +154,7 @@ body {
   margin: 0;
   border: 0;
   padding: 0;
-  color: #333;
+  color: #000;
   height: 38px;
   width: 120px;
   cursor: move;
@@ -176,7 +176,7 @@ body {
 }
 
 .controls .options div[class*='title'] label {
-  color: #777;
+  color: #333;
   height: 18px;
   font-size: 11px;
   line-height: 18px;
@@ -315,7 +315,7 @@ body {
 .controls .options .info {
   padding: 0;
   width: 38px;
-  color: #333;
+  color: #000;
   float: right;
   height: 38px;
   font-size: 11px;
@@ -353,6 +353,10 @@ html[theme-dark='true'] .controls .options .item button {
 
 html[theme-dark='true'] .controls .options .item button[selected] {
   background-color: #afafaf !important;
+}
+
+html[theme-dark='true'] .controls .separator {
+  background-color: rgb(255 255 255 / 10%);
 }
 
 html[context='popup'] .actions {left: 1px}
