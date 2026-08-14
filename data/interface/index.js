@@ -67,9 +67,27 @@ var config  = {
       return chrome.runtime.getManifest().homepage_url;
     }
   },
+  "page": {
+    "url": "",
+    "storageKey": "last.draw",
+    "key": function (url) {
+      if (!url) return "last.draw";
+      /* A deterministic 64-bit key keeps each URL isolated without placing a
+       * potentially very long URL directly in chrome.storage's key space. */
+      let hash = 14695981039346656037n;
+      for (let i = 0; i < url.length; i++) {
+        hash ^= BigInt(url.charCodeAt(i));
+        hash = BigInt.asUintN(64, hash * 1099511628211n);
+      }
+      return "last.draw.page." + hash.toString(16);
+    }
+  },
   "print": function () {
     if (config.port.name === "page") {
-      background.send("print");
+      window.parent.postMessage({
+        "source": "draw-on-page",
+        "type": "print"
+      }, "*");
     } else {
       window.print();
     }
@@ -141,14 +159,19 @@ var config  = {
     "connect": function () {
       config.port.name = "webapp";
       const context = document.documentElement.getAttribute("context");
+      const params = new URLSearchParams(document.location.search);
       /*  */
       if (chrome.runtime) {
         if (chrome.runtime.connect) {
           if (context !== config.port.name) {
-            if (document.location.search === "?tab") config.port.name = "tab";
-            if (document.location.search === "?win") config.port.name = "win";
-            if (document.location.search === "?page") config.port.name = "page";
-            if (document.location.search === "?popup") config.port.name = "popup";
+            if (params.has("tab")) config.port.name = "tab";
+            if (params.has("win")) config.port.name = "win";
+            if (params.has("page")) config.port.name = "page";
+            if (params.has("popup")) config.port.name = "popup";
+            if (config.port.name === "page") {
+              config.page.url = params.get("url") || document.referrer || "";
+              config.page.storageKey = config.page.key(config.page.url);
+            }
             /*  */
             if (config.port.name === "popup") {
               document.body.style.width = "800px";
@@ -194,6 +217,9 @@ var config  = {
       config.draw.brushing.shadow.color.value = config.storage.read("shadow.color") !== undefined ? config.storage.read("shadow.color") : "#777777";
       config.draw.background.color.value = config.storage.read("background.color") !== undefined ? config.storage.read("background.color") : "#ffffff";
       config.draw.brushing.controls.display = config.storage.read("controls.display") !== undefined ? config.storage.read("controls.display") : "block";
+      config.draw.storageKey = config.port.name === "page" ? config.page.storageKey : "last.draw";
+      const anchorPreference = config.storage.read("anchor.enabled");
+      config.draw.anchor.enabled = config.port.name === "page" && anchorPreference === true;
       config.draw.shape.selector.setAttribute("selected", config.storage.read("shape.selector") !== undefined ? config.storage.read("shape.selector") : "Circle");
       config.draw.brushing.selector.setAttribute("selected", config.storage.read("brushing.selector") !== undefined ? config.storage.read("brushing.selector") : "Pencil");
       /*  */
@@ -204,8 +230,12 @@ var config  = {
       config.draw.brushing.line.opacity.previousSibling.textContent = Number(config.draw.brushing.line.opacity.value).toFixed(2);
       config.draw.brushing.shadow.offset.previousSibling.textContent = Number(config.draw.brushing.shadow.offset.value).toFixed(1);
       /*  */
-      //config.draw.brushing.controls.popup.style.top = config.storage.read("controls.top") !== undefined ? config.storage.read("controls.top") : "100px";
-      //config.draw.brushing.controls.popup.style.left = config.storage.read("controls.left") !== undefined ? config.storage.read("controls.left") : "100px";
+      if (config.storage.read("controls.top") !== undefined) {
+        config.draw.brushing.controls.popup.style.top = config.storage.read("controls.top");
+      }
+      if (config.storage.read("controls.left") !== undefined) {
+        config.draw.brushing.controls.popup.style.left = config.storage.read("controls.left");
+      }
       /*  */
       const root = document.documentElement;
       const show = document.getElementById("show");
@@ -232,22 +262,58 @@ var config  = {
       config.draw.brushing.controls.popup.style.display = config.draw.brushing.controls.display;
       show.title = config.draw.brushing.controls.display === "block" ? "Hide Controls" : "Show Controls";
       /*  */
-      const last = config.storage.read("last.draw");
+      const last = config.storage.read(config.draw.storageKey);
       if (last) {
-        config.draw.canvas.loadFromJSON(JSON.parse(last));
-        if (config.port.name === "page") {
-          config.draw.canvas.backgroundColor = "transparent";
+        let saved = null;
+        try {
+          saved = JSON.parse(last);
+        } catch (e) {
+          saved = null;
         }
-        /*  */
-        config.draw.canvas.renderAll();
+        const savedCanvas = saved && saved.version === 2 && saved.canvas ? saved.canvas : saved;
+        if (savedCanvas) {
+          const loaded = config.draw.canvas.loadFromJSON(savedCanvas);
+          Promise.resolve(loaded).then(function () {
+            if (config.port.name === "page") {
+              config.draw.canvas.backgroundColor = "transparent";
+              config.draw.canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+              config.draw.anchor.initialized = false;
+            }
+            config.draw.canvas.renderAll();
+            config.draw.history = [config.draw.snapshot()];
+            config.draw.historyIndex = 0;
+            if (config.draw.anchor.button) {
+              config.draw.anchor.button.setAttribute("aria-pressed", String(config.draw.anchor.enabled));
+              config.draw.anchor.button.title = config.draw.anchor.enabled ? "Keep drawings fixed to the page" : "Keep drawings fixed to the viewport";
+            }
+          }).catch(function () {
+            config.draw.history = [config.draw.snapshot()];
+            config.draw.historyIndex = 0;
+          });
+        } else {
+          config.draw.history = [config.draw.snapshot()];
+          config.draw.historyIndex = 0;
+        }
+      } else {
+        config.draw.history = [config.draw.snapshot()];
+        config.draw.historyIndex = 0;
+      }
+      config.draw.anchor.button = document.getElementById("anchor");
+      if (config.draw.anchor.button) {
+        config.draw.anchor.button.style.display = config.port.name === "page" ? "block" : "none";
+        config.draw.anchor.button.setAttribute("aria-pressed", String(config.draw.anchor.enabled));
       }
     }
   },
   "draw": {
     "mode": '',
-    "screen": 0,
     "theme": {},
     "history": [],
+    "historyIndex": -1,
+    "historyLimit": 100,
+    "historyTimeout": null,
+    "restoring": false,
+    "storageKey": "last.draw",
     "canvas": null,
     "background": {},
     "clipboard": null,
@@ -255,8 +321,15 @@ var config  = {
     "id": "draw-on-page-canvas",
     "options": {"width": 800, "height": 800},
     "save": function () {
-      const current = config.draw.history[config.draw.history.length - 1];
-      config.storage.write("last.draw", JSON.stringify(current));
+      if (!config.draw.canvas) return;
+      const current = {
+        "version": 2,
+        "url": config.page.url,
+        "anchor": config.draw.anchor.enabled,
+        "canvas": config.draw.serializeCanvas()
+      };
+      config.storage.write(config.draw.storageKey, JSON.stringify(current));
+      config.draw.recordHistory();
     },
     "copy": function () {
       const active = config.draw.canvas.getActiveObject();
@@ -267,31 +340,29 @@ var config  = {
       }
     },
     "undo": function () {
-      if (config.draw.screen < config.draw.history.length) {
-        config.draw.canvas.clear();
-        config.draw.canvas.renderAll();
-        const index = config.draw.history.length - 1 - config.draw.screen;
-        config.draw.canvas.loadFromJSON(config.draw.history[index - 1]);
-        config.draw.canvas.renderAll();
-        config.draw.screen += 1;
+      config.draw.recordHistory();
+      if (config.draw.historyIndex > 0) {
+        config.draw.restoreHistory(config.draw.historyIndex - 1);
       }
     },
     "redo": function () {
-      if (config.draw.screen > 0) {
-        config.draw.canvas.clear();
-        config.draw.canvas.renderAll();
-        const index = config.draw.history.length - 1 - config.draw.screen;
-        config.draw.canvas.loadFromJSON(config.draw.history[index + 1]);
-        config.draw.canvas.renderAll();
-        config.draw.screen -= 1;
+      config.draw.recordHistory();
+      if (config.draw.historyIndex < config.draw.history.length - 1) {
+        config.draw.restoreHistory(config.draw.historyIndex + 1);
       }
     },
     "remove": {
       "active": {
         "objects": function () {
-          config.draw.canvas.getActiveObjects().forEach(function (object) {
+          if (!config.draw.canvas) return;
+          const objects = config.draw.canvas.getActiveObjects();
+          if (!objects.length) return;
+          objects.forEach(function (object) {
             config.draw.canvas.remove(object);
           });
+          config.draw.canvas.discardActiveObject();
+          config.draw.canvas.requestRenderAll();
+          config.listeners.object.updated();
         }
       }
     },
@@ -326,6 +397,7 @@ var config  = {
       }
     },
     "paste": function () {
+      if (!config.draw.clipboard || !config.draw.canvas) return;
       config.draw.clipboard.clone(function (cloned) {
         config.draw.canvas.discardActiveObject();
         cloned.set({
@@ -346,6 +418,82 @@ var config  = {
         config.draw.canvas.renderAll();
         config.listeners.object.updated();
       });
+    },
+    "snapshot": function () {
+      return JSON.stringify(config.draw.serializeCanvas());
+    },
+    "serializeCanvas": function () {
+      const canvas = config.draw.canvas.toJSON();
+      canvas.viewportTransform = [1, 0, 0, 1, 0, 0];
+      return canvas;
+    },
+    "recordHistory": function () {
+      if (!config.draw.canvas || config.draw.restoring) return;
+      const screen = config.draw.snapshot();
+      if (config.draw.historyIndex >= 0 && config.draw.history[config.draw.historyIndex] === screen) return;
+      config.draw.history = config.draw.history.slice(0, config.draw.historyIndex + 1);
+      config.draw.history.push(screen);
+      if (config.draw.history.length > config.draw.historyLimit) config.draw.history.shift();
+      config.draw.historyIndex = config.draw.history.length - 1;
+    },
+    "restoreHistory": function (index) {
+      if (!config.draw.canvas || index < 0 || index >= config.draw.history.length) return;
+      config.draw.restoring = true;
+      config.draw.historyIndex = index;
+      const result = config.draw.canvas.loadFromJSON(JSON.parse(config.draw.history[index]));
+      Promise.resolve(result).then(function () {
+        if (config.port.name === "page") {
+          const x = config.draw.anchor.enabled ? -config.draw.anchor.scrollX : 0;
+          const y = config.draw.anchor.enabled ? -config.draw.anchor.scrollY : 0;
+          config.draw.canvas.setViewportTransform([1, 0, 0, 1, x, y]);
+        }
+        config.draw.canvas.renderAll();
+        config.draw.restoring = false;
+      }).catch(function () {
+        config.draw.restoring = false;
+      });
+    },
+    "anchor": {
+      "enabled": false,
+      "initialized": false,
+      "scrollX": 0,
+      "scrollY": 0,
+      "viewport": function (scrollX, scrollY) {
+        this.scrollX = Number(scrollX) || 0;
+        this.scrollY = Number(scrollY) || 0;
+        if (!config.draw.canvas || config.port.name !== "page" || !this.enabled) return;
+        config.draw.canvas.setViewportTransform([1, 0, 0, 1, -this.scrollX, -this.scrollY]);
+        this.initialized = true;
+        config.draw.canvas.requestRenderAll();
+      },
+      "enable": function () {
+        if (this.enabled || !config.draw.canvas || config.port.name !== "page") return;
+        const x = this.scrollX;
+        const y = this.scrollY;
+        config.draw.canvas.getObjects().forEach(function (object) {
+          object.left += x;
+          object.top += y;
+          object.setCoords();
+        });
+        this.enabled = true;
+        config.draw.canvas.setViewportTransform([1, 0, 0, 1, -x, -y]);
+        this.initialized = true;
+        config.draw.canvas.requestRenderAll();
+      },
+      "disable": function () {
+        if (!this.enabled || !config.draw.canvas || config.port.name !== "page") return;
+        const x = this.scrollX;
+        const y = this.scrollY;
+        config.draw.canvas.getObjects().forEach(function (object) {
+          object.left -= x;
+          object.top -= y;
+          object.setCoords();
+        });
+        this.enabled = false;
+        config.draw.canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+        this.initialized = false;
+        config.draw.canvas.requestRenderAll();
+      }
     },
     "shape": {
       "fill": {},
@@ -533,6 +681,14 @@ var config  = {
     "draggable": function () {
       const x = {"init": null, "first": null};
       const y = {"init": null, "first": null};
+      let positionTimeout = null;
+      const persistPosition = function () {
+        window.clearTimeout(positionTimeout);
+        positionTimeout = window.setTimeout(function () {
+          config.storage.write("controls.top", config.draw.brushing.controls.popup.style.top);
+          config.storage.write("controls.left", config.draw.brushing.controls.popup.style.left);
+        }, 150);
+      };
       /*  */
       const touchmove = function (e) {
         const touch = e.touches[0];        
@@ -540,8 +696,7 @@ var config  = {
         config.draw.brushing.controls.popup.style.top = y.init + touch.pageY - y.first + "px";
         config.draw.brushing.controls.popup.style.left = x.init + touch.pageX - x.first + "px";
         /*  */
-        config.storage.write("controls.top", config.draw.brushing.controls.popup.style.top);
-        config.storage.write("controls.left", config.draw.brushing.controls.popup.style.left);
+        persistPosition();
             };
       /*  */
       const touchstart = function (e) {
@@ -561,8 +716,7 @@ var config  = {
         config.draw.brushing.controls.popup.style.top = y.init + e.pageY - y.first + "px";
         config.draw.brushing.controls.popup.style.left = x.init + e.pageX - x.first + "px";
         /*  */
-        config.storage.write("controls.top", config.draw.brushing.controls.popup.style.top);
-        config.storage.write("controls.left", config.draw.brushing.controls.popup.style.left);
+        persistPosition();
       };
       /*  */
       const mousedown = function (e) {      
@@ -601,6 +755,7 @@ var config  = {
     const dark = document.getElementById("theme-dark");
     const support = document.getElementById("support");
     const zoomout = document.getElementById("zoom-out");
+    const anchor = document.getElementById("anchor");
     const donation = document.getElementById("donation");
     const color = document.getElementById("theme-color");
     /*  */
@@ -648,8 +803,10 @@ var config  = {
     clear.addEventListener("click", function () {
       const flag = window.confirm("Are you sure you want to clear all drawings?");
       if (flag) {
-        config.storage.write("last.draw", '');
+        config.storage.write(config.draw.storageKey, '');
         config.draw.canvas.clear();
+        config.draw.history = [config.draw.snapshot()];
+        config.draw.historyIndex = 0;
         document.location.reload();
       }
     });
@@ -662,8 +819,20 @@ var config  = {
       root.setAttribute("theme-dark", !state);
       config.storage.write("theme.dark", !state);
     });
+    if (anchor) {
+      anchor.addEventListener("click", function () {
+        if (config.port.name !== "page") return;
+        if (config.draw.anchor.enabled) config.draw.anchor.disable();
+        else config.draw.anchor.enable();
+        config.storage.write("anchor.enabled", config.draw.anchor.enabled);
+        anchor.setAttribute("aria-pressed", String(config.draw.anchor.enabled));
+        anchor.title = config.draw.anchor.enabled ? "Keep drawings fixed to the page" : "Keep drawings fixed to the viewport";
+        config.draw.recordHistory();
+      });
+    }
     /*  */
     document.addEventListener("keydown", function (e) {
+      if (e.target && e.target.matches && e.target.matches("input, textarea, select, [contenteditable='true']")) return;
       const key = e.key ? e.key : e.code;
       const arrow = key.indexOf("Arrow") === 0;
       const code = e.keyCode ? e.keyCode : e.which;
@@ -671,14 +840,29 @@ var config  = {
       config.draw.keyborad.code = code;
       /*  */
       //if (code === 27) close.click();
-      if (e.ctrlKey && code === 67) config.draw.copy();
-      if (e.ctrlKey && code === 89) config.draw.redo();
-      if (e.ctrlKey && code === 90) config.draw.undo();
-      if (e.ctrlKey && code === 86) config.draw.paste();
-      if (code === 46) config.draw.remove.active.objects();
+      const modifier = e.ctrlKey || e.metaKey;
+      if (modifier && code === 67) {e.preventDefault(); config.draw.copy();}
+      if (modifier && code === 89) {e.preventDefault(); config.draw.redo();}
+      if (modifier && code === 90) {
+        e.preventDefault();
+        if (e.shiftKey) config.draw.redo();
+        else config.draw.undo();
+      }
+      if (modifier && code === 86) {e.preventDefault(); config.draw.paste();}
+      if (code === 8 || code === 46) {
+        const hasSelection = config.draw.canvas && config.draw.canvas.getActiveObjects().length > 0;
+        if (hasSelection) {
+          e.preventDefault();
+          config.draw.remove.active.objects();
+        }
+      }
       if (arrow) config.draw.action.move(code, e.shiftKey);
       if (code === 188 || code === 190) config.draw.action.resize(code);
       if (code === 219 || code === 221) config.draw.action.rotate(code);
+    });
+    document.addEventListener("keyup", function (e) {
+      const code = e.keyCode ? e.keyCode : e.which;
+      if (code === 16) config.draw.keyborad.code = null;
     });
     /*  */
     theme.addEventListener("click", function () {color.click()});
@@ -691,7 +875,16 @@ var config  = {
     show.addEventListener("click", function () {config.controls.show()});
     hide.addEventListener("click", function () {config.controls.hide()});
     zoomin.addEventListener("click", function () {config.draw.zoom.in()});
-    close.addEventListener("click", function () {background.send("close")});
+    close.addEventListener("click", function () {
+      if (config.port.name === "page") {
+        window.parent.postMessage({
+          "source": "draw-on-page",
+          "type": "close"
+        }, "*");
+      } else {
+        background.send("close");
+      }
+    });
     zoomout.addEventListener("click", function () {config.draw.zoom.out()});
     png.addEventListener("click", function () {config.draw.convert.to.png()});
     reload.addEventListener("click", function () {document.location.reload()});
@@ -704,11 +897,8 @@ var config  = {
       "timeout": null,
       "updated": function () {
         window.clearTimeout(config.listeners.object.timeout);
-        config.listeners.object.timeout = window.setTimeout(function () {          
-          const screen = JSON.stringify(config.draw.canvas);
-          if (config.draw.history.indexOf(screen) === -1) {
-            config.draw.history.push(screen);
-          }
+        config.listeners.object.timeout = window.setTimeout(function () {
+          config.draw.recordHistory();
         }, 300);
       }
     },
@@ -746,6 +936,15 @@ var config  = {
           if (zoom < 0.01) zoom = 0.01;
           /*  */
           config.draw.canvas.zoomToPoint(point, zoom);
+          o.e.preventDefault();
+          o.e.stopPropagation();
+        } else if (config.port.name === "page") {
+          window.parent.postMessage({
+            "source": "draw-on-page",
+            "type": "scroll",
+            "deltaX": o.e.deltaX,
+            "deltaY": o.e.deltaY
+          }, "*");
           o.e.preventDefault();
           o.e.stopPropagation();
         }
@@ -879,6 +1078,13 @@ var config  = {
     }
   }
 };
+
+window.addEventListener("message", function (event) {
+  const data = event && event.data;
+  if (!data || data.source !== "draw-on-page" || data.type !== "viewport") return;
+  if (event.source !== window.parent) return;
+  config.draw.anchor.viewport(data.scrollX, data.scrollY);
+}, false);
 
 config.port.connect();
 

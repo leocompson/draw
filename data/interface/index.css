@@ -8,6 +8,15 @@ html {
   overflow: hidden;
 }
 
+html[context='page'],
+html[context='page'] body {
+  background: transparent !important;
+}
+
+html[context='page'] {
+  color-scheme: light;
+}
+
 body {
   margin: 0;
   border: 0;
@@ -219,6 +228,15 @@ body {
 .controls .button #clear {background: url('icons/Clear.png') no-repeat center center}
 .controls .button #remove {background: url('icons/Remove.png') no-repeat center center}
 .controls .button #theme-dark {background: url('icons/Dark.png') no-repeat center center}
+.controls .button #anchor {
+  font-size: 16px;
+  line-height: 38px;
+}
+.controls .button #anchor::before {content: '\2693'}
+.controls .button #anchor[aria-pressed='true'] {
+  opacity: 1;
+  background-color: rgba(0, 117, 255, 0.15);
+}
 .controls .button #zoom-in {background: url('icons/Zoom-in.png') no-repeat center center}
 .controls .button #zoom-out {background: url('icons/Zoom-out.png') no-repeat center center}
 
@@ -259,6 +277,54 @@ body {
 .fixed button:hover {
   opacity: 0.7;
   background-color: #d8d8d8 !important;
+}
+
+/* Give the utility buttons a visible surface over arbitrary page content. */
+.controls .fixed {
+  padding: 2px;
+  box-sizing: content-box;
+  border: solid 1px rgba(0, 117, 255, 0.45);
+  border-radius: 5px;
+  background-color: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+}
+
+.controls .fixed button {
+  opacity: 0.92;
+  border-radius: 3px;
+  background-color: rgba(0, 117, 255, 0.08) !important;
+}
+
+.controls .fixed button:hover,
+.controls .fixed button:focus-visible {
+  opacity: 1;
+  background-color: rgba(0, 117, 255, 0.2) !important;
+}
+
+.controls .fixed button[aria-pressed='true'] {
+  opacity: 1;
+  color: #fff;
+  background-color: var(--theme-color) !important;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+
+html[theme-dark='true'] .controls .fixed {
+  border-color: rgba(120, 180, 255, 0.75);
+  background-color: rgba(41, 41, 41, 0.96);
+}
+
+html[theme-dark='true'] .controls .fixed button {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html[theme-dark='true'] .controls .fixed button:hover,
+html[theme-dark='true'] .controls .fixed button:focus-visible {
+  background-color: rgba(255, 255, 255, 0.24) !important;
+}
+
+html[theme-dark='true'] .controls .fixed button[aria-pressed='true'] {
+  filter: none;
+  background-color: var(--theme-color) !important;
 }
 
 .controls .options input[type='range'] {
@@ -368,6 +434,19 @@ html[context='page'] .close {
   display: block;
 }
 
+/* Fabric's interaction canvas must stay below the page controls. */
+html[context='page'] .canvas-container {
+  position: relative;
+  z-index: 1;
+}
+
+html[context='page'] .close,
+html[context='page'] .actions,
+html[context='page'] .controls {
+  pointer-events: auto;
+  z-index: 12;
+}
+
 html[context='page'] .actions {
   top: 43px;
   left: 1px;
@@ -394,6 +473,12 @@ html[context='page'] .toolbar {
 
 html[context='page'] .controls {
   border: solid 1px var(--theme-color);
+}
+
+html[context='page'] .canvas-container,
+html[context='page'] .canvas-container canvas,
+html[context='page'] #draw-on-page-canvas {
+  background: transparent !important;
 }
 
 html[context='webapp'] .toolbar {
