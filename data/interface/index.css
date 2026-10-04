@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --theme-color: #0075ff;
 }
 
@@ -13,7 +13,7 @@ body {
   border: 0;
   padding: 0;
   overflow: hidden;
-  font-family: monaco, 'andale mono', 'lucida console', 'courier new', monospace;
+  font-family: var(--ui-font, monaco, 'andale mono', 'lucida console', 'courier new', monospace);
 }
 
 .close, .actions, .toolbar {
@@ -36,17 +36,17 @@ body {
   color: #777;
   width: 42px;
   height: 42px;
-  font-size: 12px;
   cursor: pointer;
   user-select: none;
   text-align: center;
   transition: 300ms ease filter;
-  background-color: rgba(0,0,0,0.1);
-  font-family: monaco, 'andale mono', 'lucida console', 'courier new', monospace;
+  background-color: rgba(0, 0, 0, 0.1);
+  font-size: calc(12px * var(--ui-scale, 1));
+  font-family: var(--ui-font, monaco, 'andale mono', 'lucida console', 'courier new', monospace);
 }
 
 .close > table tr td:hover, .toolbar > table tr td:hover, .actions > table tr td:hover {
-  background-color: rgba(0,0,0,0.15);
+  background-color: rgba(0, 0, 0, 0.15);
 }
 
 .close > table tr td svg, .toolbar > table tr td svg, .actions > table tr td svg {
@@ -65,7 +65,7 @@ body {
   flex: 1;
 }
 
-.flex * {text-decoration: underline}
+.flex * {text-decoration: none}
 .flex *:checked {text-decoration: none}
 .flex *[selected] {text-decoration: none}
 
@@ -90,7 +90,7 @@ body {
 }
 
 .controls {
-  width: 260px;
+  width: 278px;
   padding: 5px;
   cursor: move;
   display: none;
@@ -98,14 +98,17 @@ body {
   resize: horizontal;
   top: calc(50% - 240px);
   background-color: #fff;
-  left: calc(100% - 330px);
-  border: solid 1px rgba(0,0,0,0.1);
+  left: calc(100% - 350px);
+  border: solid 1px rgba(0, 0, 0, 0.1);
+}
+
+.controls[page='options'] {
+  cursor: default;
 }
 
 .controls .separator {
   height: 1px;
-  margin-bottom: 5px;
-  background-color: rgba(0,0,0,0.1);
+  margin-bottom: 5px;  background-color: rgba(0, 0, 0, 0.1);
 }
 
 .controls .options {
@@ -134,20 +137,20 @@ body {
   height: 38px;
   outline: none;
   cursor: pointer;
-  font-size: 12px;
   text-decoration: none;
   background-color: #fff;
   background-size: 16px !important;
   transition: 300ms ease background-color;
-  font-family: monaco, 'andale mono', 'lucida console', 'courier new', monospace;
+  font-size: calc(12px * var(--ui-scale, 1));
+  font-family: var(--ui-font, monaco, 'andale mono', 'lucida console', 'courier new', monospace);
 }
 
 .controls .options .item button:hover {
-  background-color: rgba(0,0,0,0.1) !important;
+  background-color: rgba(0, 0, 0, 0.1) !important;
 }
 
 .controls .options .item button[selected] {
-  background-color: rgba(0,0,0,0.1) !important;
+  background-color: rgba(0, 0, 0, 0.1) !important;
 }
 
 .controls .options label {
@@ -159,7 +162,6 @@ body {
   width: 120px;
   cursor: move;
   outline: none;
-  font-size: 11px;
   text-align: left;
   user-select: none;
   line-height: 38px;
@@ -167,7 +169,8 @@ body {
   background-color: #fff;
   vertical-align: middle;
   background-size: 16px !important;
-  font-family: monaco, 'andale mono', 'lucida console', 'courier new', monospace;
+  font-size: calc(11px * var(--ui-scale, 1));
+  font-family: var(--ui-font, monaco, 'andale mono', 'lucida console', 'courier new', monospace);
 }
 
 .controls .options div[class*='title'] {
@@ -178,7 +181,7 @@ body {
 .controls .options div[class*='title'] label {
   color: #333;
   height: 18px;
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-scale, 1));
   line-height: 18px;
   text-decoration: none;
 }
@@ -199,6 +202,127 @@ body {
   box-sizing: content-box;
 }
 
+.controls .options .tool-group {
+  opacity: 0.35;
+  pointer-events: none;
+  transition: 300ms ease opacity;
+}
+
+.controls .options .tool-group[shown] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.controls .options [data-color] {
+  margin: 0 2px;
+  opacity: 0.35;
+  pointer-events: none;
+  transition: 300ms ease opacity;
+}
+
+.controls .options [data-color][shown] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+html[simplified='true'] .controls .options .tool-group {
+  display: none;
+}
+
+html[simplified='true'] .controls .options .tool-group[shown] {
+  display: block;
+}
+
+html[simplified='true'] .controls .options [data-color] {
+  display: none;
+}
+
+html[simplified='true'] .controls .options [data-color][shown] {
+  display: inline-block;
+}
+
+.controls .options .tool-group[removed],
+.controls .options [data-color][removed] {
+  display: none;
+}
+
+.controls .options select {
+  color: #333;
+  height: 38px;
+  outline: none;
+  padding: 0 5px;
+  background: #fff;
+  margin: 0 5px 0 auto;
+  text-decoration: none;
+  vertical-align: middle;
+  border: solid 1px rgba(0, 0, 0, 0.2);
+  font-size: calc(11px * var(--ui-scale, 1));
+  font-family: var(--ui-font, monaco, 'andale mono', 'lucida console', 'courier new', monospace);
+}
+
+.controls .options .item.flex select {
+  flex: 0 0 auto;
+}
+
+.controls .options #draw-text-bold,
+.controls .options #draw-text-italic {
+  width: 32px;
+  flex: 0 0 32px;
+  font-weight: 700;
+  line-height: 42px;
+  text-align: center;
+}
+
+.controls .options #draw-text-italic {
+  margin-left: 5px;
+  font-style: italic;
+}
+
+.options-page .value select {
+  margin: 0;
+  padding: 0;
+  color: #333;
+  width: 78px;
+  height: 32px;
+  outline: none;
+  font-weight: 600;
+  background: #fff;
+  border: solid 1px rgba(0, 0, 0, 0.2);
+  font-size: calc(11px * var(--ui-scale, 1));
+  font-family: var(--ui-font, monaco, 'andale mono', 'lucida console', 'courier new', monospace);
+}
+
+html[theme-dark='true'] .options-page .value select {
+  color: #efefef;
+  border-color: rgba(255, 255, 255, 0.2);
+  background: #292929;
+}
+
+.options-page .value input[type='text'] {
+  width: 64px;
+  color: #333;
+  height: 32px;
+  outline: none;
+  padding: 0 6px;
+  background: #fff;
+  font-weight: 600;
+  text-align: center;
+  box-sizing: border-box;
+  border: solid 1px rgba(0, 0, 0, 0.2);
+  font-size: calc(11px * var(--ui-scale, 1));
+  font-family: var(--ui-font, monaco, 'andale mono', 'lucida console', 'courier new', monospace);
+}
+
+html[theme-dark='true'] .options-page .value input[type='text'] {
+  color: #efefef;
+  border-color: rgba(255, 255, 255, 0.2);
+  background: #292929;
+}
+
+.controls .options-page .setting-row[data-open] {
+  cursor: pointer;
+}
+
 .controls .options .item #Spray {background: url('icons/Spray.png') no-repeat center center}
 .controls .options .item #Pencil {background: url('icons/Pencil.png') no-repeat center center}
 .controls .options .item #Circle {background: url('icons/Dotted.png') no-repeat center center}
@@ -210,6 +334,25 @@ body {
 .controls .options .item #Hexagon {background: url('icons/Hexagon.png') no-repeat center center}
 .controls .options .item #Octagon {background: url('icons/Octagon.png') no-repeat center center}
 .controls .options .item #Triangle {background: url('icons/Triangle.png') no-repeat center center}
+
+.controls .options .draw-brushing-selector button svg {
+  fill: #333;
+  pointer-events: none;
+  vertical-align: middle;
+}
+
+.controls .options .draw-brushing-selector button[selected] svg {
+  fill: #111;
+}
+
+html[theme-dark='true'] .controls .options .draw-brushing-selector button svg {
+  fill: #adadad;
+  filter: invert(1);
+}
+
+html[capturing='true'] body > * {
+  visibility: hidden;
+}
 
 .controls .button #copy {background: url('icons/Copy.png') no-repeat center center}
 .controls .button #save {background: url('icons/Save.png') no-repeat center center}
@@ -238,9 +381,238 @@ body {
   visibility: hidden;
 }
 
-.hide {
+.controls .button #options {
+  opacity: 0.85;
+  background-color: transparent;
+}
+
+.controls .button #options svg {
+  fill: #333;
+  pointer-events: none;
+  vertical-align: middle;
+  transition: 300ms ease fill;
+}
+
+.controls .button #shortcuts {
+  opacity: 0.85;
+  background-color: transparent;
+}
+
+@keyframes page-fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.controls .draw-page {
+  margin: 0;
+  padding: 0;
+  cursor: default;
+}
+
+.controls .options-page {
+  margin: 0;
+  padding: 0;
+  color: #333;
+  width: 278px;
+  display: none;
+  cursor: default;
+  overflow: hidden;
+  height: 100%;
+  user-select: none;
+  box-sizing: border-box;
+  background-color: #29292900;
+  animation: page-fade 200ms ease;
+  font-size: calc(12px * var(--ui-scale, 1));
+}
+
+.controls[page='options'] > .draw-page {
   display: none;
 }
+
+.controls[page='options'] > .options-page {
+  display: flex;
+  flex-direction: column;
+}
+
+.controls[page='options'] > .options-page[data-page='shortcuts'] {
+  display: none;
+}
+
+.controls[page='shortcuts'] > .draw-page,
+.controls[page='shortcuts'] > .options-page:not([data-page='shortcuts']) {
+  display: none;
+}
+
+.controls[page='shortcuts'] > .options-page[data-page='shortcuts'] {
+  display: flex;
+  flex-direction: column;
+}
+
+.options-page .options-toolbar {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  cursor: move;
+  display: flex;
+  padding-top: 3px;
+  align-items: center;
+  padding-bottom: 5px;
+  border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+}
+
+.options-page .options-toolbar button {
+  padding: 0;
+  width: 38px;
+  height: 38px;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  margin: -3px 5px 0 0;
+  background-color: transparent;
+  transition: 300ms ease background-color;
+}
+
+.options-page .options-toolbar button:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.options-page .options-toolbar button svg {
+  fill: #333;
+  pointer-events: none;
+  vertical-align: middle;
+}
+
+.options-page .options-toolbar .name {
+  color: #333;
+  margin: 0;
+  padding: 0;
+  font-size: calc(12px * var(--ui-scale, 1));
+  font-weight: 600;
+}
+
+.options-page .options-body {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  min-height: 0;
+  overflow-y: auto;
+  max-height: 600px;
+  flex-direction: column;
+}
+
+.options-page .setting-row {
+  border: 0;
+  padding: 5px;
+  display: flex;
+  border-radius: 0;
+  margin: 5px 0 0 0;
+  align-items: flex-start;
+  background-color: #29292900;
+  justify-content: space-between;
+  border-bottom: solid 1px rgba(0, 0, 0, 0.05);
+}
+
+.options-page .setting-row .title {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.options-page .setting-row .title p {
+  margin: 5px 0;
+}
+
+.options-page .setting-row .title .name {
+  color: #333;
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-family: var(--ui-font, monaco, 'andale mono', 'lucida console', 'courier new', monospace);
+}
+
+.options-page .setting-row .title .note {
+  padding: 0;
+  color: #333;
+  text-indent: 0;
+  line-height: 1.4;
+  margin: 0 0 5px 0;
+  text-align: justify;
+  box-sizing: border-box;
+  font-family: var(--ui-font, monaco, 'andale mono', 'lucida console', 'courier new', monospace);
+}
+
+.options-page .setting-row .value {
+  padding: 2px 0;
+  flex: 0 0 auto;
+  margin-left: 15px;
+}
+
+.options-page .setting-row .value input[type='checkbox'] {
+  margin: 0;
+  padding: 0;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  background-color: #29292900;
+  accent-color: var(--theme-color);
+}
+
+html[theme-dark='true'] .options-page .options-toolbar {
+  border-color: rgb(255 255 255 / 10%);
+}
+
+html[theme-dark='true'] .options-page .options-toolbar button {
+  background-color: #292929;
+}
+
+html[theme-dark='true'] .options-page .options-toolbar button:hover {
+  background-color: rgb(255 255 255 / 10%);
+}
+
+html[theme-dark='true'] .options-page .options-toolbar button svg,
+html[theme-dark='true'] .options-page .options-toolbar .name {
+  fill: #efefef;
+  color: #efefef;
+}
+
+html[theme-dark='true'] .options-page .setting-row {
+  border-color: rgb(255 255 255 / 10%);
+}
+
+html[theme-dark='true'] .options-page .setting-row .title .name {
+  color: #efefef;
+}
+
+html[theme-dark='true'] .options-page .setting-row .title .note {
+  color: #9a9a9a;
+}
+
+html[theme-dark='true'] .options-body {
+  scrollbar-color: #3F3F3F transparent;
+}
+
+html[theme-dark='true'] .options-body::-webkit-scrollbar {
+  width: 10px;
+}
+
+html[theme-dark='true'] .options-body::-webkit-scrollbar-thumb {
+  border-radius: 2px;
+  background-color: #3F3F3F;
+}
+
+html[theme-dark='true'] .options-body::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+html[context='popup'] .actions {left: 1px}
 
 .fixed {
   top: -1px;
@@ -264,7 +636,7 @@ body {
 .controls .options input[type='range'] {
   margin: 0;
   padding: 0;
-  width: 72px;
+  width: 92px;
   height: 38px;
   cursor: pointer;
   margin-left: 5px;
@@ -284,7 +656,7 @@ body {
   height: 32px;
   outline: none;
   cursor: pointer;
-  max-width: 48px;
+  max-width: 42px;
   background: #fff;
   box-sizing: border-box;
   vertical-align: middle;
@@ -299,17 +671,17 @@ body {
   height: 38px;
   outline: none;
   cursor: pointer;
-  font-size: 12px;
   max-width: 38px;
   text-decoration: none;
   background-color: #fff;
   background-size: 16px !important;
   transition: 300ms ease background-color;
-  font-family: monaco, 'andale mono', 'lucida console', 'courier new', monospace;
+  font-size: calc(12px * var(--ui-scale, 1));
+  font-family: var(--ui-font, monaco, 'andale mono', 'lucida console', 'courier new', monospace);
 }
 
 .controls .button button:hover {
-  background-color: rgba(0,0,0,0.1) !important;
+  background-color: rgba(0, 0, 0, 0.1) !important;
 }
 
 .controls .options .info {
@@ -318,7 +690,7 @@ body {
   color: #000;
   float: right;
   height: 38px;
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-scale, 1));
   overflow: hidden;
   line-height: 38px;
   text-align: right;
@@ -326,7 +698,7 @@ body {
   background-color: #fff;
   vertical-align: middle;
   text-overflow: ellipsis;
-  font-family: monaco, 'andale mono', 'lucida console', 'courier new', monospace;
+  font-family: var(--ui-font, monaco, 'andale mono', 'lucida console', 'courier new', monospace);
 }
 
 .canvas-container, .canvas-container canvas {
@@ -334,21 +706,27 @@ body {
   outline: none;
   max-width: 100vw;
   height: 100vw !important;
-  border-bottom: solid 1px rgba(0,0,0,0.1);
+  border-bottom: solid 1px rgba(0, 0, 0, 0.1);
 }
 
 html[theme-dark='true'] .controls,
 html[theme-dark='true'] .controls .options .info,
 html[theme-dark='true'] .controls .options .item,
 html[theme-dark='true'] .controls .options label,
+html[theme-dark='true'] .controls .options select,
 html[theme-dark='true'] .controls .options input[type='color'] {
   color: #efefef;
   background-color: #292929;
 }
 
+html[theme-dark='true'] .controls .options select {
+  border-color: rgb(255 255 255 / 10%);
+}
+
 html[theme-dark='true'] .controls .button button,
 html[theme-dark='true'] .controls .options .item button {
   filter: invert(1);
+  background-color: #d5d5d5;
 }
 
 html[theme-dark='true'] .controls .options .item button[selected] {
@@ -407,7 +785,7 @@ html[context='webapp'] .controls {
 }
 
 @media print {
-  .toolbar, .controls, .actions, .close {
+  .toolbar, .controls, .actions, .close, .options-page {
     display: none !important;
   }
   .canvas-container, .canvas-container canvas {

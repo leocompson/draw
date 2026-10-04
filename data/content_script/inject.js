@@ -32,6 +32,41 @@ if (!background) {
   
   var config = {
     "iframe": null,
+    "scroll": {
+      "frame": false,
+      "method": function () {
+        if (config.scroll.frame) return;
+        config.scroll.frame = true;
+        /*  */
+        window.requestAnimationFrame(function () {
+          config.scroll.frame = false;
+          if (!config.iframe) return;
+          const origin = new URL(config.iframe.src).origin;
+          const scroll = document.scrollingElement ? document.scrollingElement.scrollTop : 0;
+          config.iframe.contentWindow.postMessage({"path": "draw-on-page", "type": "scroll", "scrollY": scroll}, origin);
+        });
+      },
+      "receive": function (e) {
+        if (!config.iframe) return;
+        if (e.source !== config.iframe.contentWindow) return;
+        if (e.data.path !== "draw-on-page") return;
+        if (e.data.type !== "ready") return;
+        config.scroll.method();
+      }
+    },
+    "keyboard": {
+      "relay": function (e) {
+        if (!config.iframe) return;
+        if (e.ctrlKey || e.altKey || e.metaKey || e.repeat) return;
+        if (e.key.length !== 1 || e.key.trim() === '') return;
+        const active = document.activeElement;
+        if (active && /^(input|select|textarea)$/i.test(active.tagName)) return;
+        if (active && active.isContentEditable) return;
+        /*  */
+        const origin = new URL(config.iframe.src).origin;
+        config.iframe.contentWindow.postMessage({"path": "draw-on-page", "type": "key", "key": e.key}, origin);
+      }
+    },
     "interface": {
       "print": function () {    
         window.print();
@@ -43,6 +78,7 @@ if (!background) {
       "hide": function () {
         background.send("icon", {"path": "OFF"});
         config.iframe.remove();
+        config.iframe = null;
       },
       "show": function () {
         config.iframe = document.createElement("iframe");
@@ -69,6 +105,10 @@ if (!background) {
   /*  */
   background.receive("close", config.interface.hide);
   background.receive("print", config.interface.print);
+  /*  */
+  window.addEventListener("keydown", config.keyboard.relay, true);
+  window.addEventListener("message", config.scroll.receive, false);
+  window.addEventListener("scroll", config.scroll.method, {passive: true});
 }
 
 config.interface.toggle();

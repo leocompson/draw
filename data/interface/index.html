@@ -24,6 +24,14 @@
 		<div class="actions">
 			<table>
 				<tr>
+					<td id="reset" title="Reset to factory settings">
+						<svg width="12" height="12" viewBox="0 0 48 48">
+							<path d="M 9.8212753,13.365952 H 34.12766 V 20.455317 L 44.25532,10.327657 34.12766,0.199997 V 7.2893585 H 3.744681 V 22.987232 H 9.8212753 Z"/>
+							<path d="M 38.178723,34.634044 13.872338,34.634037 13.872339,27.544678 3.744681,37.672337 13.872339,47.8 13.87234,40.710639 44.255317,40.710637 44.255318,25.012763 38.178724,25.012764 Z"/>
+						</svg>
+					</td>
+				</tr>
+				<tr>
 					<td id="show" title="Show | Hide Controls">
 						<svg width="12" height="12" viewBox="0 0 32 32">
 							<path d="M 7.9134109,0.23180074 C 5.9180109,0.23374515 4.1268622,1.4560202 3.3975943,3.3133821 H 0.31175049 V 6.840365 H 3.3848075 C 4.1089264,8.7104539 5.9080234,9.9431521 7.9134109,9.9432576 9.9172413,9.9413934 11.714195,8.7090025 12.437752,6.840365 H 31.70664 V 3.3133821 H 12.43349 C 11.703652,1.4545729 9.9103673,0.23199361 7.9134109,0.23180074 Z"/>
@@ -93,12 +101,29 @@
 		</div>
 		<div class="container"></div>
 			<canvas id="draw-on-page-canvas"></canvas>
-			<div class="controls">
-				<div class="options">
+			<div class="controls" page="draw">
+				<div class="draw-page">
+					<div class="options">
 					<div class="item flex draw-brushing-selector">
 						<button drag="disabled" id="Pencil" title="Pencil Brush"></button>
 						<button drag="disabled" id="Circle" title="Circle Brush"></button>
 						<button drag="disabled" id="Spray" title="Spray Brush"></button>
+						<button drag="disabled" id="draw-text-tool" title="Add text (click canvas, then type)">
+							<svg width="14" height="14" viewBox="0 0 16 16">
+								<path d="M 2 2 H 14 V 5 H 12 V 4 H 9.5 V 12 H 11 V 14 H 5 V 12 H 6.5 V 4 H 4 V 5 H 2 Z"/>
+							</svg>
+						</button>
+						<button drag="disabled" id="draw-eraser-tool" title="Eraser (click an object to delete it)">
+							<svg width="14" height="14" viewBox="0 0 507.85 507.85">
+								<path d="M490.8,148.725l-104.8-104c-11.2-10.8-26-17.2-41.6-17.2c-15.6,0-30.4,6-41.6,17.2l-285.6,284 C6,339.525,0,354.325,0,369.925c0,15.6,6,30.4,17.2,41.2l66.8,66.8c1.6,1.6,3.6,2.4,5.6,2.4h279.6c4.4,0,8-3.6,8-8 c0-4.4-3.6-8-8-8H256.4l234-232.8C513.6,208.725,513.6,171.525,490.8,148.725z M234,464.325H92.8l-64.4-64 c-8-8-12.4-18.8-12.4-30.4c0-11.6,4.4-22,12.4-30.4l140.4-139.2l165.2,164.4L234,464.325z"/>
+							</svg>
+						</button>
+						<button drag="disabled" id="draw-screenshot-tool" title="Place a page screenshot under the drawing">
+							<svg width="14" height="14" viewBox="0 0 48 48">
+								<path d="M 11.072917 0.421875 C 9.6662613 0.4931789 8.5416678 1.6665212 8.5416667 3.0885417 L 8.5416667 8.28125 L 3.3489583 8.28125 C 1.8815199 8.28125 0.68229167 9.4804758 0.68229167 10.947917 C 0.68229167 12.415353 1.8815192 13.614583 3.3489583 13.614583 L 32.875 13.614583 C 33.395061 13.633423 33.752113 13.782666 33.994792 14.026042 C 34.237469 14.269416 34.388644 14.630862 34.40625 15.151042 L 34.40625 44.671875 C 34.40625 46.139315 35.605477 47.338542 37.072917 47.338542 C 38.540353 47.338542 39.739582 46.139315 39.739583 44.671875 L 39.739583 39.479167 L 44.932292 39.479167 C 46.399728 39.479167 47.598958 38.279941 47.598958 36.8125 C 47.598958 35.345059 46.399728 34.145833 44.932292 34.145833 L 39.739583 34.145833 L 39.739583 12.947917 C 39.739583 11.501913 39.237991 10.260827 38.46875 9.5572917 C 37.766016 8.7853163 36.52192 8.28125 35.072917 8.28125 L 13.875 8.28125 L 13.875 3.0885417 C 13.875 1.6211044 12.675773 0.421875 11.208333 0.421875 C 11.182583 0.421875 11.137852 0.418583 11.072917 0.421875 z"/>
+								<path d="M 8.5416667,18.145833 V 18.546875 34.8125 c 0,1.447859 0.4996071,2.692502 1.2708333,3.395833 0.70341,0.771309 1.953182,1.270834 3.401042,1.270834 H 29.875 V 34.145833 H 15.473958 c -1.373482,0 -1.598958,-0.965169 -1.598958,-1.598958 V 18.145833 Z"/>
+							</svg>
+						</button>
 					</div>
 					<div class="item flex draw-shape-selector">
 						<button drag="disabled" id="Circle" title="Draw Circle"></button>
@@ -110,51 +135,75 @@
 						<button drag="disabled" id="Move" title="Move objects"></button>
 					</div>
 					<div class="item title flex">
-						<label class="button" for="draw-brushing-line-color">Line</label>
-						<label class="button" for="draw-shape-fill-color">Fill</label>
-						<label class="button" for="draw-background-color">Background</label>
-						<label class="button" for="draw-brushing-stroke-color">Stroke</label>
-						<label class="button" for="draw-brushing-shadow-color">Shadow</label>
+						<label class="button" data-color="line" for="draw-brushing-line-color">Line</label>
+						<label class="button" data-color="fill" for="draw-shape-fill-color">Fill</label>
+						<label class="button" data-color="background" for="draw-background-color">Background</label>
+						<label class="button" data-color="stroke" for="draw-brushing-stroke-color">Stroke</label>
+						<label class="button" data-color="shadow" for="draw-brushing-shadow-color">Shadow</label>
+						<label class="button" data-color="text-color" for="draw-text-color">Color</label>
 					</div>
 					<div class="item flex">
-						<input drag="disabled" type="color" id="draw-brushing-line-color">
-						<input drag="disabled" type="color" id="draw-shape-fill-color">
-						<input drag="disabled" type="color" id="draw-background-color">
-						<input drag="disabled" type="color" id="draw-brushing-stroke-color">
-						<input drag="disabled" type="color" id="draw-brushing-shadow-color">
+						<input drag="disabled" type="color" id="draw-brushing-line-color" data-color="line">
+						<input drag="disabled" type="color" id="draw-shape-fill-color" data-color="fill">
+						<input drag="disabled" type="color" id="draw-background-color" data-color="background">
+						<input drag="disabled" type="color" id="draw-brushing-stroke-color" data-color="stroke">
+						<input drag="disabled" type="color" id="draw-brushing-shadow-color" data-color="shadow">
+						<input drag="disabled" type="color" id="draw-text-color" data-color="text-color">
 					</div>
 					<div class="separator flex"></div>
-					<div class="item shrink">
-						<label for="draw-brushing-line-width">Brush width (px)</label>
-						<span class="info"></span><input drag="disabled" type="range" min="0" max="150" id="draw-brushing-line-width">
+					<div class="tool-group" data-tool="brushing">
+						<div class="item shrink">
+							<label for="draw-brushing-line-width">Brush width (px)</label>
+							<span class="info"></span><input drag="disabled" type="range" min="0" max="150" id="draw-brushing-line-width">
+						</div>
+						<div class="item shrink">
+							<label for="draw-brushing-line-opacity">Brush opacity (%)</label>
+							<span class="info"></span><input drag="disabled" type="range" min="0" max="1" step="0.01" id="draw-brushing-line-opacity">
+						</div>
+						<div class="item shrink">
+							<label for="draw-brushing-shadow-width">Shadow width (px)</label>
+							<span class="info"></span><input drag="disabled" type="range" min="0" max="50" id="draw-brushing-shadow-width">
+						</div>
+						<div class="item shrink">
+							<label for="draw-brushing-shadow-offset">Shadow offset (px)</label>
+							<span class="info"></span><input drag="disabled" type="range" min="0" max="50" id="draw-brushing-shadow-offset">
+						</div>
 					</div>
-					<div class="item shrink">
-						<label for="draw-brushing-stroke-width">Stroke width (px)</label>
-						<span class="info"></span><input drag="disabled" type="range" min="0" max="150" id="draw-brushing-stroke-width">
+					<div class="tool-group" data-tool="shape">
+						<div class="item shrink">
+							<label for="draw-brushing-stroke-width">Stroke width (px)</label>
+							<span class="info"></span><input drag="disabled" type="range" min="0" max="150" id="draw-brushing-stroke-width">
+						</div>
+						<div class="item shrink">
+							<label for="draw-shape-fill-opacity">Shape opacity (%)</label>
+							<span class="info"></span><input drag="disabled" type="range" min="0" max="1" step="0.01" id="draw-shape-fill-opacity">
+						</div>
 					</div>
-					<div class="item shrink">
-						<label for="draw-brushing-shadow-width">Shadow width (px)</label>
-						<span class="info"></span><input drag="disabled" type="range" min="0" max="50" id="draw-brushing-shadow-width">
-					</div>
-					<div class="item shrink">
-						<label for="draw-brushing-shadow-offset">Shadow offset (px)</label>
-						<span class="info"></span><input drag="disabled" type="range" min="0" max="50" id="draw-brushing-shadow-offset">
-					</div>
-					<div class="item shrink">
-						<label for="draw-brushing-line-opacity">Brush opacity (%)</label>
-						<span class="info"></span><input drag="disabled" type="range" min="0" max="1" step="0.01" id="draw-brushing-line-opacity">
-					</div>
-					<div class="item shrink">
-						<label for="draw-shape-fill-opacity">Shape opacity (%)</label>
-						<span class="info"></span><input drag="disabled" type="range" min="0" max="1" step="0.01" id="draw-shape-fill-opacity">
+					<div class="tool-group" data-tool="text">
+						<div class="item shrink">
+							<label for="draw-text-size">Text size (px)</label>
+							<span class="info"></span><input drag="disabled" type="range" min="8" max="120" id="draw-text-size">
+						</div>
+						<div class="item shrink">
+							<label for="draw-text-transparency">Transparency</label>
+							<span class="info"></span><input drag="disabled" type="range" min="0" max="100" value="0" id="draw-text-transparency">
+						</div>
+						<div class="item flex shrink">
+							<label for="draw-text-family">Font</label>
+							<select drag="disabled" id="draw-text-family">
+								<option value="system-ui, sans-serif">System</option>
+								<option value="Georgia, serif">Georgia</option>
+								<option value="'Times New Roman', Times, serif">Times</option>
+								<option value="Verdana, Geneva, sans-serif">Verdana</option>
+								<option value="'Courier New', Courier, monospace">Courier</option>
+								<option value="'Trebuchet MS', Tahoma, sans-serif">Trebuchet</option>
+							</select>
+							<button drag="disabled" id="draw-text-bold" title="Bold text">B</button>
+							<button drag="disabled" id="draw-text-italic" title="Italic text">I</button>
+						</div>
 					</div>
 				</div>
 				<div class="separator flex"></div>
-				<div class="button flex fixed">
-					<button drag="disabled" id="zoom-in" title="Zoom in (Shift + mouse wheel up)"></button>
-					<button drag="disabled" id="zoom-out" title="Zoom out (Shift + mouse wheel down)"></button>
-					<button drag="disabled" id="theme-dark" title="Switch to dark mode"></button>
-				</div>
 				<div class="button flex">
 					<button drag="disabled" id="copy" title="Copy selection"></button>
 					<button drag="disabled" id="paste" title="Paste clipboard"></button>
@@ -163,7 +212,278 @@
 					<button drag="disabled" id="save" title="Save all drawings"></button>
 					<button drag="disabled" id="theme" title="Change app theme color"></button>
 					<button drag="disabled" id="hide" title="Show|Hide controls"></button>
-          <input drag="disabled" id="theme-color" type="color">
+           <input drag="disabled" id="theme-color" type="color">
+				</div>
+				</div>
+				<div class="button flex fixed">
+					<button drag="disabled" id="zoom-in" title="Zoom in (Shift + mouse wheel up)"></button>
+					<button drag="disabled" id="zoom-out" title="Zoom out (Shift + mouse wheel down)"></button>
+					<button drag="disabled" id="theme-dark" title="Switch to dark mode"></button>
+					<button drag="disabled" id="options" title="Drawing options">
+						<svg width="16" height="16" viewBox="0 0 28 28">
+							<g transform="matrix(2.1646693,0,0,2.1646693,-0.36694,-0.20005)">
+								<path d="M 5.291747 7.3914293e-06 C 5.143599 7.3914293e-06 4.9923362 0.079047754 4.9669283 0.25986233 L 4.7070734 2.0147854 C 4.3170741 2.1447853 3.8930007 2.3918547 3.6017877 2.665325 L 2.0417558 2.0147854 C 1.8467562 1.9497856 1.679114 1.996668 1.5870096 2.1447129 L 0.28683269 4.4202481 C 0.24592767 4.5195349 0.2867604 4.7161217 0.41676016 4.8100305 L 1.7819008 5.8503525 C 1.70197 6.2886408 1.709374 6.7144634 1.7819008 7.1496272 L 0.41676016 8.2549129 C 0.2867604 8.3849125 0.28679703 8.5146959 0.35179643 8.6446953 L 1.6519734 10.920231 C 1.7169742 10.985231 1.8467562 11.050195 2.0417558 10.985194 L 3.6667514 10.334655 C 3.9917509 10.594653 4.3416255 10.821626 4.7720371 10.985194 L 5.0318921 12.675154 C 5.0318921 12.805155 5.161711 12.935009 5.3567107 12.935009 L 7.9570646 12.935009 C 8.0870641 12.935009 8.2818833 12.805155 8.2818833 12.675154 L 8.5417382 10.985194 C 8.9425138 10.855195 9.3220246 10.594653 9.647024 10.334655 L 11.27202 10.985194 C 11.402018 11.050194 11.596803 10.985266 11.661802 10.855267 L 12.961979 8.5797316 C 13.026979 8.449732 13.027015 8.2549495 12.897015 8.1899492 L 11.401947 7.1496272 C 11.481867 6.7113382 11.474477 6.2855156 11.401947 5.8503525 L 12.767088 4.7450668 C 12.897089 4.615067 12.897052 4.485284 12.832051 4.3552844 L 11.531875 2.0797491 C 11.466875 2.0147493 11.337092 1.9497857 11.142092 2.0147854 L 9.5170965 2.665325 C 9.1920973 2.405326 8.8287526 2.1447853 8.4118108 2.0147854 L 8.1519558 0.32482606 C 8.1298436 0.19516072 8.0366195 7.3914293e-06 7.8921009 7.3914293e-06 L 5.291747 7.3914293e-06 z M 6.591924 4.2253569 C 7.8269211 4.2253569 8.8665569 5.2649922 8.8665569 6.4999899 C 8.8665569 7.7349872 7.8269211 8.7746228 6.591924 8.7746228 C 5.356926 8.7746228 4.3163887 7.7349872 4.3163887 6.4999899 C 4.3163887 5.2649922 5.356926 4.2253569 6.591924 4.2253569 z"/>
+							</g>
+						</svg>
+					</button>
+					<button drag="disabled" id="shortcuts" title="Keyboard shortcuts">
+						<svg width="16" height="16" viewBox="0 0 500 500">
+							<path fill="#333" d="M 245.80078 66.503906 C 185.43287 66.419648 126.44509 71.501336 68.945312 81.933594 C 49.009148 85.550638 14.061148 117.43365 14.0625 137.69531 L 14.160156 362.30469 C 14.161556 382.56625 48.750414 418.06641 68.945312 418.06641 C 184.16984 430.81884 304.63401 431.43828 431.05469 418.06641 C 451.2027 415.9353 485.9375 382.56625 485.9375 362.30469 L 485.9375 137.69531 C 485.9375 117.43365 451.06065 85.134394 431.05469 81.933594 C 367.95651 71.838368 306.16869 66.588164 245.80078 66.503906 z M 106.93359 140.13672 C 121.071 140.13672 132.42188 151.58525 132.42188 165.72266 C 132.42188 179.86104 121.071 191.40625 106.93359 191.40625 C 92.795208 191.40625 81.25 179.85977 81.25 165.72266 C 81.25 151.58525 92.796476 140.13673 106.93359 140.13672 z M 176.26953 140.13672 C 190.40792 140.13672 201.85547 151.58525 201.85547 165.72266 C 201.85547 179.86104 190.40792 191.40625 176.26953 191.40625 C 162.13241 191.40625 150.58594 179.85977 150.58594 165.72266 C 150.58594 151.58525 162.13241 140.13673 176.26953 140.13672 z M 248.4375 140.13672 C 262.57591 140.13672 274.02344 151.58525 274.02344 165.72266 C 274.02344 179.86104 262.57591 191.40625 248.4375 191.40625 C 234.29582 191.40625 222.85156 179.85977 222.85156 165.72266 C 222.85156 151.58525 234.29682 140.13673 248.4375 140.13672 z M 320.60547 140.13672 C 334.74386 140.13672 346.28906 151.58525 346.28906 165.72266 C 346.28906 179.86104 334.74386 191.40625 320.60547 191.40625 C 306.4638 191.40625 295.01953 179.85977 295.01953 165.72266 C 295.01953 151.58525 306.4648 140.13673 320.60547 140.13672 z M 391.89453 140.13672 C 406.03294 140.13672 417.57812 151.58525 417.57812 165.72266 C 417.57812 179.86104 406.03294 191.40625 391.89453 191.40625 C 377.75289 191.40625 366.40625 179.85977 366.40625 165.72266 C 366.40625 151.58525 377.75387 140.13673 391.89453 140.13672 z M 106.93359 209.66797 C 121.071 209.66797 132.42187 221.11649 132.42188 235.25391 C 132.42188 249.39228 121.071 260.83984 106.93359 260.83984 C 92.795208 260.83984 81.249999 249.391 81.25 235.25391 C 81.25 221.11649 92.796476 209.66797 106.93359 209.66797 z M 176.26953 209.66797 C 190.40792 209.66797 201.85547 221.11649 201.85547 235.25391 C 201.85547 249.39228 190.40792 260.83984 176.26953 260.83984 C 162.13241 260.83984 150.58594 249.391 150.58594 235.25391 C 150.58594 221.11649 162.13241 209.66797 176.26953 209.66797 z M 248.4375 209.66797 C 262.57591 209.66797 274.02344 221.11649 274.02344 235.25391 C 274.02344 249.39228 262.57591 260.83984 248.4375 260.83984 C 234.29582 260.83984 222.85156 249.391 222.85156 235.25391 C 222.85156 221.11649 234.29682 209.66797 248.4375 209.66797 z M 320.60547 209.66797 C 334.74386 209.66797 346.28906 221.11649 346.28906 235.25391 C 346.28906 249.39228 334.74386 260.83984 320.60547 260.83984 C 306.4638 260.83984 295.01953 249.391 295.01953 235.25391 C 295.01953 221.11649 306.4648 209.66797 320.60547 209.66797 z M 391.89453 209.66797 C 406.03294 209.66797 417.57812 221.11649 417.57812 235.25391 C 417.57812 249.39228 406.03294 260.83984 391.89453 260.83984 C 377.75289 260.83984 366.40625 249.391 366.40625 235.25391 C 366.40625 221.11649 377.75387 209.66797 391.89453 209.66797 z M 134.96094 324.12109 L 365.03906 324.12109 C 378.27492 324.12109 388.96483 334.81102 388.96484 348.04688 C 388.96484 361.28273 378.27492 371.97266 365.03906 371.97266 L 134.96094 371.97266 C 121.72508 371.97266 111.03516 361.28273 111.03516 348.04688 C 111.03516 334.81102 121.72508 324.12109 134.96094 324.12109 z"/>
+						</svg>
+					</button>
+				</div>
+				<div class="options-page">
+					<div class="options-toolbar">
+						<button drag="disabled" id="options-close" title="Back to drawing">
+							<svg width="14" height="14" viewBox="0 0 16 16">
+								<path fill="#333" d="M 8 0.33007812 L 7.8222656 0.50585938 L 0.33007812 8 L 8 15.669922 L 9.6347656 14.037109 L 4.7636719 9.1640625 L 15.566406 9.1640625 L 15.566406 6.8359375 L 4.7636719 6.8359375 L 9.6347656 1.9628906 L 8 0.33007812 z"/>
+							</svg>
+						</button>
+						<p class="name">Drawing options</p>
+					</div>
+					<div class="options-body">
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">Auto-save drawings</p>
+								<p class="note">The drawing saves itself while you draw. Default is on.</p>
+							</div>
+							<div class="value">
+								<input drag="disabled" type="checkbox" id="feature-autosave" checked>
+							</div>
+						</div>
+						<!-- -->
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">Text tool</p>
+								<p class="note">Adds a text tool; click the canvas, then type. Default is off.</p>
+							</div>
+							<div class="value">
+								<input drag="disabled" type="checkbox" id="feature-text">
+							</div>
+						</div>
+						<!-- -->
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">Eraser tool</p>
+								<p class="note">Clicking an object deletes it while active. Default is off.</p>
+							</div>
+							<div class="value">
+								<input drag="disabled" type="checkbox" id="feature-eraser">
+							</div>
+						</div>
+						<!-- -->
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">Drag-to-size shapes</p>
+								<p class="note">Press and drag to size a new shape as you draw it. Default is off.</p>
+							</div>
+							<div class="value">
+								<input drag="disabled" type="checkbox" id="feature-dragsize">
+							</div>
+						</div>
+						<!-- -->
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">Simplify interface</p>
+								<p class="note">Show only the options for the active tool. Default is off.</p>
+							</div>
+							<div class="value">
+								<input drag="disabled" type="checkbox" id="feature-simplify">
+							</div>
+						</div>
+						<!-- -->
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">Page screenshot layer</p>
+								<p class="note">Places a page screenshot under the drawing. Default is off.</p>
+							</div>
+							<div class="value">
+								<input drag="disabled" type="checkbox" id="feature-screenshot">
+							</div>
+						</div>
+						<!-- -->
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">Page scroll</p>
+								<p class="note">Sticks drawings to the page content while scrolling. Default is off.</p>
+							</div>
+							<div class="value">
+								<input drag="disabled" type="checkbox" id="feature-scroll">
+							</div>
+						</div>
+						<!-- -->
+						<div class="setting-row" data-open id="shortcuts-open">
+							<div class="title">
+								<p class="name">Keyboard shortcuts</p>
+								<p class="note">Draw without the panel using keys. Default is off.</p>
+							</div>
+							<div class="value">
+								<input drag="disabled" type="checkbox" id="feature-shortcuts">
+							</div>
+						</div>
+						<!-- -->
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">UI font</p>
+								<p class="note">Font used across this panel.</p>
+							</div>
+							<div class="value">
+								<select drag="disabled" id="ui-font">
+									<option value="monaco, 'andale mono', 'lucida console', 'courier new', monospace">Classic</option>
+									<option value="system-ui, sans-serif">System</option>
+									<option value="Georgia, serif">Georgia</option>
+									<option value="Verdana, Geneva, sans-serif">Verdana</option>
+									<option value="'Courier New', Courier, monospace">Courier</option>
+								</select>
+							</div>
+						</div>
+						<!-- -->
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">UI size</p>
+								<p class="note">Scale of the panel text.</p>
+							</div>
+							<div class="value">
+								<select drag="disabled" id="ui-size">
+									<option value="0.9">Small</option>
+									<option value="1">Normal</option>
+									<option value="1.15">Large</option>
+								</select>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- -->
+				<div class="options-page" data-page="shortcuts">
+					<div class="options-toolbar">
+						<button drag="disabled" id="shortcuts-close" title="Back to drawing">
+							<svg width="14" height="14" viewBox="0 0 16 16">
+								<path fill="#333" d="M 8 0.33007812 L 7.8222656 0.50585938 L 0.33007812 8 L 8 15.669922 L 9.6347656 14.037109 L 4.7636719 9.1640625 L 15.566406 9.1640625 L 15.566406 6.8359375 L 4.7636719 6.8359375 L 9.6347656 1.9628906 L 8 0.33007812 z"/>
+							</svg>
+						</button>
+						<p class="name">Keyboard shortcuts</p>
+					</div>
+					<div class="options-body">
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">Show panel</p>
+								<p class="note">Show or hide the panel while drawing continues.</p>
+							</div>
+							<div class="value">
+								<input drag="disabled" type="text" id="key-panel">
+							</div>
+						</div>
+						<!-- -->
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">Pencil</p>
+								<p class="note">Switch to the pencil brush.</p>
+							</div>
+							<div class="value">
+								<input drag="disabled" type="text" id="key-pencil">
+							</div>
+						</div>
+						<!-- -->
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">Eraser</p>
+								<p class="note">Requires the eraser tool to be enabled.</p>
+							</div>
+							<div class="value">
+								<input drag="disabled" type="text" id="key-eraser">
+							</div>
+						</div>
+						<!-- -->
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">Move</p>
+								<p class="note">Switch to the move tool.</p>
+							</div>
+							<div class="value">
+								<input drag="disabled" type="text" id="key-move">
+							</div>
+						</div>
+						<!-- -->
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">Undo</p>
+								<p class="note">Removes the last drawing step.</p>
+							</div>
+							<div class="value">
+								<input drag="disabled" type="text" id="key-undo">
+							</div>
+						</div>
+						<!-- -->
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">Redo</p>
+								<p class="note">Restores the last removed step.</p>
+							</div>
+							<div class="value">
+								<input drag="disabled" type="text" id="key-redo">
+							</div>
+						</div>
+						<!-- -->
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">Text tool</p>
+								<p class="note">Requires the text tool to be enabled.</p>
+							</div>
+							<div class="value">
+								<input drag="disabled" type="text" id="key-text">
+							</div>
+						</div>
+						<!-- -->
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">Copy</p>
+								<p class="note">Copies the selected object.</p>
+							</div>
+							<div class="value">
+								<input drag="disabled" type="text" id="key-copy">
+							</div>
+						</div>
+						<!-- -->
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">Paste</p>
+								<p class="note">Pastes the copied object.</p>
+							</div>
+							<div class="value">
+								<input drag="disabled" type="text" id="key-paste">
+							</div>
+						</div>
+						<!-- -->
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">Download</p>
+								<p class="note">Saves the drawing as an image.</p>
+							</div>
+							<div class="value">
+								<input drag="disabled" type="text" id="key-download">
+							</div>
+						</div>
+						<!-- -->
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">Zoom in</p>
+								<p class="note">Zooms the drawing in one step.</p>
+							</div>
+							<div class="value">
+								<input drag="disabled" type="text" id="key-zoomin">
+							</div>
+						</div>
+						<!-- -->
+						<div class="setting-row">
+							<div class="title">
+								<p class="name">Zoom out</p>
+								<p class="note">Zooms the drawing out one step.</p>
+							</div>
+							<div class="value">
+								<input drag="disabled" type="text" id="key-zoomout">
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
